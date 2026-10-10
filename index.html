@@ -61,8 +61,7 @@
             background: transparent;
             cursor: pointer;
             text-transform: uppercase;
-            appearance: none; /* Quita la flecha por defecto en algunos navegadores */
-            -webkit-appearance: none;
+            appearance: none;
             text-align: center;
             outline: none;
         }
@@ -89,21 +88,17 @@
         .dates {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            grid-auto-rows: minmax(50px, auto); /* Altura mínima para las celdas */
+            grid-auto-rows: minmax(50px, auto);
+            border-left: 2px solid black;
         }
 
         .date {
             padding: 5px;
-            text-align: right; /* Números alineados a la derecha como en la imagen */
+            text-align: right;
             border-right: 1px solid black;
             border-bottom: 1px solid black;
             box-sizing: border-box;
             color: #000;
-        }
-        
-        /* Borde exterior más grueso para la cuadrícula de fechas simulando la imagen */
-        .dates {
-            border-left: 2px solid black;
         }
         
         .date:nth-child(7n) {
@@ -139,9 +134,92 @@
         <div class="dates" id="dates"></div>
     </div>
 
+    <!-- AQUÍ EMPIEZA LA MAGIA DEL CALENDARIO. ¡Asegúrate de copiar esto! -->
     <script>
         const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
         const yearSelect = document.getElementById('yearSelect');
         const monthSpan = document.getElementById('month');
         const datesContainer = document.getElementById('dates');
-        const prevBtn = document.
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        let currentDate = new Date();
+        let currentMonth = currentDate.getMonth();
+        let currentYear = currentDate.getFullYear();
+
+        function initYearSelect() {
+            for (let y = 2024; y <= 2035; y++) {
+                let option = document.createElement('option');
+                option.value = y;
+                option.text = y;
+                yearSelect.appendChild(option);
+            }
+            yearSelect.value = currentYear;
+            
+            yearSelect.addEventListener('change', () => {
+                currentYear = parseInt(yearSelect.value);
+                renderCalendar();
+            });
+        }
+
+        function renderCalendar() {
+            monthSpan.textContent = monthNames[currentMonth];
+            yearSelect.value = currentYear; 
+
+            datesContainer.innerHTML = ''; 
+
+            const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+            let startDay = firstDayIndex === 0 ? 6 : firstDayIndex - 1; 
+
+            const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const prevLastDate = new Date(currentYear, currentMonth, 0).getDate();
+            const lastDayIndex = new Date(currentYear, currentMonth, lastDate).getDay();
+            let endDays = lastDayIndex === 0 ? 0 : 7 - lastDayIndex;
+
+            for (let i = startDay; i > 0; i--) {
+                const dateDiv = document.createElement('div');
+                dateDiv.classList.add('date', 'inactive');
+                dateDiv.textContent = prevLastDate - i + 1;
+                datesContainer.appendChild(dateDiv);
+            }
+
+            for (let i = 1; i <= lastDate; i++) {
+                const dateDiv = document.createElement('div');
+                dateDiv.classList.add('date');
+                dateDiv.textContent = i;
+                datesContainer.appendChild(dateDiv);
+            }
+
+            for (let i = 1; i <= endDays; i++) {
+                const dateDiv = document.createElement('div');
+                dateDiv.classList.add('date', 'inactive');
+                dateDiv.textContent = i;
+                datesContainer.appendChild(dateDiv);
+            }
+        }
+
+        prevBtn.addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+                if(currentYear < 2024) currentYear = 2024;
+            }
+            renderCalendar();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+                if(currentYear > 2035) currentYear = 2035;
+            }
+            renderCalendar();
+        });
+
+        initYearSelect();
+        renderCalendar();
+    </script>
+</body>
+</html>
