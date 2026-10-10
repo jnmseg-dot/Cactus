@@ -2,7 +2,395 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta nam<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario Cactus</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .calendar {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 350px;
+            overflow: hidden;
+            border: 2px solid black;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 2px solid black;
+        }
+
+        .header button {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #333;
+            padding: 0 10px;
+        }
+
+        .header button:hover {
+            color: #000;
+        }
+
+        .month-year {
+            font-size: 1.2em;
+            font-weight: bold;
+            display: flex;
+            gap: 10px;
+            text-transform: uppercase;
+        }
+        
+        .month-year select {
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            text-transform: uppercase;
+            appearance: none;
+            text-align: center;
+            outline: none;
+        }
+
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-weight: bold;
+            color: #555;
+            background-color: #f8f9fa;
+            border-bottom: 2px solid black;
+            font-size: 0.8em;
+        }
+
+        .days div {
+            padding: 10px 0;
+            border-right: 1px solid #ccc;
+        }
+        .days div:last-child {
+            border-right: none;
+        }
+
+        .dates {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-auto-rows: minmax(50px, auto);
+            border-left: 2px solid black;
+        }
+
+        .date {
+            /* Flexbox para centrar el contenido (el span del número) */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-right: 1px solid black;
+            border-bottom: 1px solid black;
+            box-sizing: border-box;
+            color: #000;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .date:nth-child(7n) {
+            border-right: none;
+        }
+
+        .date.inactive {
+            color: #aaa;
+            background-color: #f9f9f9;
+            cursor: default;
+        }
+
+        /* --- ESTILO PARA EL NÚMERO Y FESTIVOS --- */
+        .day-number {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+        }
+
+        .festivo {
+            background-color: purple; /* Círculo rellenado */
+            color: white; /* Número en blanco para que destaque */
+            font-weight: bold;
+        }
+
+        /* --- ZONA DE BOTONES Y COLORES --- */
+        .legend {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            width: 350px;
+        }
+
+        .legend button {
+            padding: 8px 12px;
+            border: 2px solid transparent;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.8em;
+            transition: 0.2s;
+            color: #000;
+        }
+
+        .legend button.active {
+            border-color: #000;
+            box-shadow: 0 0 5px rgba(0,0,0,0.4);
+            transform: scale(1.05);
+        }
+
+        .btn-guardia { background-color: #ff4d4d; color: white; }
+        .btn-ref-ob { background-color: #ffa07a; }
+        .btn-ref-vol { background-color: #90ee90; }
+        .btn-eventos { background-color: #add8e6; }
+        .btn-otros { background-color: #ffffe0; }
+        
+        /* Botón Borrar */
+        .btn-borrar { background-color: #d3d3d3; border: 2px dashed #666; }
+
+        /* Colores aplicados al contenedor de la fecha */
+        .date.guardia { background-color: #ff4d4d; color: white; }
+        .date.ref-ob { background-color: #ffa07a; }
+        .date.ref-vol { background-color: #90ee90; }
+        .date.eventos { background-color: #add8e6; }
+        .date.otros { background-color: #ffffe0; }
+    </style>
+</head>
+<body>
+
+    <div class="calendar">
+        <div class="header">
+            <button id="prevBtn">&lt;</button>
+            <div class="month-year">
+                <span id="month"></span>
+                <select id="yearSelect"></select>
+            </div>
+            <button id="nextBtn">&gt;</button>
+        </div>
+        <div class="days">
+            <div>LUN</div>
+            <div>MAR</div>
+            <div>MIÉ</div>
+            <div>JUE</div>
+            <div>VIE</div>
+            <div>SÁB</div>
+            <div>DOM</div>
+        </div>
+        <div class="dates" id="dates"></div>
+    </div>
+
+    <div class="legend">
+        <button class="btn-guardia" data-color="guardia">Guardia</button>
+        <button class="btn-ref-ob" data-color="ref-ob">Refuerzo obligatorio</button>
+        <button class="btn-ref-vol" data-color="ref-vol">Refuerzo voluntario</button>
+        <button class="btn-eventos" data-color="eventos">Eventos</button>
+        <button class="btn-otros" data-color="otros">Otros</button>
+        <button class="btn-borrar" data-color="borrar">Borrar</button>
+    </div>
+
+    <script>
+        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        const yearSelect = document.getElementById('yearSelect');
+        const monthSpan = document.getElementById('month');
+        const datesContainer = document.getElementById('dates');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const legendBtns = document.querySelectorAll('.legend button');
+
+        let currentDate = new Date();
+        let currentMonth = currentDate.getMonth();
+        let currentYear = currentDate.getFullYear();
+        let currentColor = null;
+        const paintedDays = {}; 
+
+        // LISTA DE FESTIVOS (El mes empieza en 0)
+        const festivos = [
+            { mes: 0, dia: 1 },   // 1 Enero
+            { mes: 0, dia: 6 },   // 6 Enero
+            { mes: 1, dia: 17 },  // 17 Febrero
+            { mes: 3, dia: 2 },   // 2 Abril
+            { mes: 3, dia: 3 },   // 3 Abril
+            { mes: 4, dia: 1 },   // 1 Mayo
+            { mes: 5, dia: 29 },  // 29 Junio
+            { mes: 7, dia: 15 },  // 15 Agosto
+            { mes: 8, dia: 8 },   // 8 Septiembre
+            { mes: 9, dia: 12 },  // 12 Octubre
+            { mes: 10, dia: 2 },  // 2 Noviembre
+            { mes: 11, dia: 7 },  // 7 Diciembre
+            { mes: 11, dia: 8 },  // 8 Diciembre
+            { mes: 11, dia: 25 }  // 25 Diciembre
+        ];
+
+        legendBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.classList.contains('active')) {
+                    btn.classList.remove('active');
+                    currentColor = null;
+                } else {
+                    legendBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentColor = btn.getAttribute('data-color'); 
+                }
+            });
+        });
+
+        datesContainer.addEventListener('click', (e) => {
+            const targetDate = e.target.closest('.date'); 
+            
+            if (targetDate && !targetDate.classList.contains('inactive')) {
+                if (!currentColor) return; 
+
+                // Obtenemos el texto del número asegurándonos de cogerlo del span
+                const dayNumberSpan = targetDate.querySelector('.day-number');
+                if (!dayNumberSpan) return;
+                
+                const dayNumber = dayNumberSpan.textContent.trim();
+                const dateKey = `${currentYear}-${currentMonth}-${dayNumber}`; 
+
+                // Limpiamos cualquier color de fondo (tanto si es para borrar como para aplicar uno nuevo)
+                targetDate.classList.remove('guardia', 'ref-ob', 'ref-vol', 'eventos', 'otros');
+                
+                if (currentColor === 'borrar') {
+                    // Si la herramienta es 'borrar', simplemente eliminamos el registro del color
+                    delete paintedDays[dateKey];
+                } else {
+                    // Si es un color, lo aplicamos y lo guardamos
+                    targetDate.classList.add(currentColor);
+                    paintedDays[dateKey] = currentColor;
+                }
+            }
+        });
+
+        function initYearSelect() {
+            for (let y = 2024; y <= 2035; y++) {
+                let option = document.createElement('option');
+                option.value = y;
+                option.text = y;
+                yearSelect.appendChild(option);
+            }
+            yearSelect.value = currentYear;
+            
+            yearSelect.addEventListener('change', () => {
+                currentYear = parseInt(yearSelect.value);
+                renderCalendar();
+            });
+        }
+
+        function renderCalendar() {
+            monthSpan.textContent = monthNames[currentMonth];
+            yearSelect.value = currentYear; 
+            datesContainer.innerHTML = ''; 
+
+            const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+            let startDay = firstDayIndex === 0 ? 6 : firstDayIndex - 1; 
+
+            const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const prevLastDate = new Date(currentYear, currentMonth, 0).getDate();
+            const lastDayIndex = new Date(currentYear, currentMonth, lastDate).getDay();
+            let endDays = lastDayIndex === 0 ? 0 : 7 - lastDayIndex;
+
+            // Días mes anterior
+            for (let i = startDay; i > 0; i--) {
+                const dateDiv = document.createElement('div');
+                dateDiv.classList.add('date', 'inactive');
+                
+                const spanNum = document.createElement('span');
+                spanNum.classList.add('day-number');
+                spanNum.textContent = prevLastDate - i + 1;
+                dateDiv.appendChild(spanNum);
+                
+                datesContainer.appendChild(dateDiv);
+            }
+
+            // Días mes actual
+            for (let i = 1; i <= lastDate; i++) {
+                const dateDiv = document.createElement('div');
+                dateDiv.classList.add('date');
+                
+                const spanNum = document.createElement('span');
+                spanNum.classList.add('day-number');
+                spanNum.textContent = i;
+
+                // Festivos: círculo púrpura y número blanco
+                const esFestivo = festivos.some(festivo => festivo.mes === currentMonth && festivo.dia === i);
+                if (esFestivo) {
+                    spanNum.classList.add('festivo');
+                }
+
+                dateDiv.appendChild(spanNum);
+                
+                // Restaurar colores pintados
+                const dateKey = `${currentYear}-${currentMonth}-${i}`;
+                if (paintedDays[dateKey]) {
+                    dateDiv.classList.add(paintedDays[dateKey]);
+                }
+                
+                datesContainer.appendChild(dateDiv);
+            }
+
+            // Días mes siguiente
+            for (let i = 1; i <= endDays; i++) {
+                const dateDiv = document.createElement('div');
+                dateDiv.classList.add('date', 'inactive');
+                
+                const spanNum = document.createElement('span');
+                spanNum.classList.add('day-number');
+                spanNum.textContent = i;
+                dateDiv.appendChild(spanNum);
+                
+                datesContainer.appendChild(dateDiv);
+            }
+        }
+
+        prevBtn.addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+                if(currentYear < 2024) currentYear = 2024;
+            }
+            renderCalendar();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+                if(currentYear > 2035) currentYear = 2035;
+            }
+            renderCalendar();
+        });
+
+        initYearSelect();
+        renderCalendar();
+    </script>
+</body>
+</html>e="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendario Cactus</title>
     <style>
         body {
