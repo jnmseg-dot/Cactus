@@ -100,7 +100,7 @@
             border-bottom: 1px solid black;
             box-sizing: border-box;
             color: #000;
-            cursor: pointer; /* Añadimos el cursor de la mano */
+            cursor: pointer;
             transition: background-color 0.2s;
         }
         
@@ -112,6 +112,22 @@
             color: #aaa;
             background-color: #f9f9f9;
             cursor: default;
+        }
+
+        /* --- ESTILO PARA EL NÚMERO Y FESTIVOS --- */
+        .day-number {
+            display: inline-block;
+            width: 26px;
+            height: 26px;
+            line-height: 26px;
+            text-align: center;
+            border-radius: 50%;
+        }
+
+        .festivo {
+            border: 2px solid purple;
+            box-sizing: border-box;
+            line-height: 22px; /* Ajuste para centrar el texto con el borde */
         }
 
         /* --- ZONA DE BOTONES Y COLORES --- */
@@ -135,27 +151,23 @@
             color: #000;
         }
 
-        /* Botón seleccionado (borde negro grueso) */
         .legend button.active {
             border-color: #000;
             box-shadow: 0 0 5px rgba(0,0,0,0.4);
             transform: scale(1.05);
         }
 
-        /* Colores de los botones */
         .btn-guardia { background-color: #ff4d4d; color: white; }
         .btn-ref-ob { background-color: #ffa07a; }
         .btn-ref-vol { background-color: #90ee90; }
         .btn-eventos { background-color: #add8e6; }
         .btn-otros { background-color: #ffffe0; }
 
-        /* Colores aplicados a los días del calendario */
         .date.guardia { background-color: #ff4d4d; color: white; }
         .date.ref-ob { background-color: #ffa07a; }
         .date.ref-vol { background-color: #90ee90; }
         .date.eventos { background-color: #add8e6; }
         .date.otros { background-color: #ffffe0; }
-
     </style>
 </head>
 <body>
@@ -181,7 +193,6 @@
         <div class="dates" id="dates"></div>
     </div>
 
-    <!-- Botones para pintar -->
     <div class="legend">
         <button class="btn-guardia" data-color="guardia">Guardia</button>
         <button class="btn-ref-ob" data-color="ref-ob">Refuerzo obligatorio</button>
@@ -202,46 +213,56 @@
         let currentDate = new Date();
         let currentMonth = currentDate.getMonth();
         let currentYear = currentDate.getFullYear();
-
-        // Variables para la herramienta de pintura
         let currentColor = null;
-        const paintedDays = {}; // Aquí guardaremos los días pintados: { "2026-10-15": "guardia" }
+        const paintedDays = {}; 
 
-        // Configurar los botones de colores
+        // LISTA DE FESTIVOS (El mes empieza en 0, es decir: 0 = Enero, 1 = Febrero...)
+        const festivos = [
+            { mes: 0, dia: 1 },   // 1 Enero
+            { mes: 0, dia: 6 },   // 6 Enero
+            { mes: 1, dia: 17 },  // 17 Febrero
+            { mes: 3, dia: 2 },   // 2 Abril
+            { mes: 3, dia: 3 },   // 3 Abril
+            { mes: 4, dia: 1 },   // 1 Mayo
+            { mes: 5, dia: 29 },  // 29 Junio
+            { mes: 7, dia: 15 },  // 15 Agosto
+            { mes: 8, dia: 8 },   // 8 Septiembre
+            { mes: 9, dia: 12 },  // 12 Octubre
+            { mes: 10, dia: 2 },  // 2 Noviembre
+            { mes: 11, dia: 7 },  // 7 Diciembre
+            { mes: 11, dia: 8 },  // 8 Diciembre
+            { mes: 11, dia: 25 }  // 25 Diciembre
+        ];
+
         legendBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                // Si el botón ya estaba activo, lo desactivamos
                 if (btn.classList.contains('active')) {
                     btn.classList.remove('active');
                     currentColor = null;
                 } else {
-                    // Quitamos la clase 'active' de todos los botones y se la ponemos al que hemos hecho clic
                     legendBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    currentColor = btn.getAttribute('data-color'); // Obtenemos qué color pintar
+                    currentColor = btn.getAttribute('data-color'); 
                 }
             });
         });
 
-        // Configurar el click en los días del calendario
         datesContainer.addEventListener('click', (e) => {
-            // Solo actuar si hacemos clic en un día del mes actual y tenemos un color seleccionado
-            if (e.target.classList.contains('date') && !e.target.classList.contains('inactive')) {
-                if (!currentColor) return; // Si no hay botón seleccionado, no hace nada
+            // Buscamos el contenedor del día completo, incluso si hacemos clic justo en el número
+            const targetDate = e.target.closest('.date'); 
+            
+            if (targetDate && !targetDate.classList.contains('inactive')) {
+                if (!currentColor) return; 
 
-                const dayNumber = e.target.textContent;
-                const dateKey = `${currentYear}-${currentMonth}-${dayNumber}`; // Clave única para guardar el día
+                const dayNumber = targetDate.textContent.trim();
+                const dateKey = `${currentYear}-${currentMonth}-${dayNumber}`; 
 
-                // Si el día ya tiene el color que intentamos pintar, lo borramos (efecto goma de borrar)
-                if (e.target.classList.contains(currentColor)) {
-                    e.target.classList.remove(currentColor);
+                if (targetDate.classList.contains(currentColor)) {
+                    targetDate.classList.remove(currentColor);
                     delete paintedDays[dateKey];
                 } else {
-                    // Si tiene otros colores previos, los borramos primero
-                    e.target.classList.remove('guardia', 'ref-ob', 'ref-vol', 'eventos', 'otros');
-                    // Pintamos con el nuevo color
-                    e.target.classList.add(currentColor);
-                    // Guardamos en memoria que este día está pintado
+                    targetDate.classList.remove('guardia', 'ref-ob', 'ref-vol', 'eventos', 'otros');
+                    targetDate.classList.add(currentColor);
                     paintedDays[dateKey] = currentColor;
                 }
             }
@@ -265,7 +286,6 @@
         function renderCalendar() {
             monthSpan.textContent = monthNames[currentMonth];
             yearSelect.value = currentYear; 
-
             datesContainer.innerHTML = ''; 
 
             const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
@@ -276,7 +296,7 @@
             const lastDayIndex = new Date(currentYear, currentMonth, lastDate).getDay();
             let endDays = lastDayIndex === 0 ? 0 : 7 - lastDayIndex;
 
-            // Días del mes anterior (inactivos)
+            // Días mes anterior
             for (let i = startDay; i > 0; i--) {
                 const dateDiv = document.createElement('div');
                 dateDiv.classList.add('date', 'inactive');
@@ -284,13 +304,24 @@
                 datesContainer.appendChild(dateDiv);
             }
 
-            // Días del mes actual
+            // Días mes actual
             for (let i = 1; i <= lastDate; i++) {
                 const dateDiv = document.createElement('div');
                 dateDiv.classList.add('date');
-                dateDiv.textContent = i;
                 
-                // Comprobamos si este día lo habíamos pintado antes
+                // Envolvemos el número en un "span" para poder dibujarle el círculo
+                const spanNum = document.createElement('span');
+                spanNum.classList.add('day-number');
+                spanNum.textContent = i;
+
+                // Comprobar si coincide con la lista de festivos
+                const esFestivo = festivos.some(festivo => festivo.mes === currentMonth && festivo.dia === i);
+                if (esFestivo) {
+                    spanNum.classList.add('festivo');
+                }
+
+                dateDiv.appendChild(spanNum);
+                
                 const dateKey = `${currentYear}-${currentMonth}-${i}`;
                 if (paintedDays[dateKey]) {
                     dateDiv.classList.add(paintedDays[dateKey]);
@@ -299,7 +330,7 @@
                 datesContainer.appendChild(dateDiv);
             }
 
-            // Días del mes siguiente (inactivos)
+            // Días mes siguiente
             for (let i = 1; i <= endDays; i++) {
                 const dateDiv = document.createElement('div');
                 dateDiv.classList.add('date', 'inactive');
