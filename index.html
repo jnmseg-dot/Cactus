@@ -1,1 +1,147 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario Cactus</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
 
+        .calendar {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 350px;
+            overflow: hidden;
+            border: 2px solid black;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 2px solid black;
+        }
+
+        .header button {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #333;
+            padding: 0 10px;
+        }
+
+        .header button:hover {
+            color: #000;
+        }
+
+        .month-year {
+            font-size: 1.2em;
+            font-weight: bold;
+            display: flex;
+            gap: 10px;
+            text-transform: uppercase;
+        }
+        
+        .month-year select {
+            font-size: 1em;
+            font-weight: bold;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            text-transform: uppercase;
+            appearance: none; /* Quita la flecha por defecto en algunos navegadores */
+            -webkit-appearance: none;
+            text-align: center;
+            outline: none;
+        }
+
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-weight: bold;
+            color: #555;
+            background-color: #f8f9fa;
+            border-bottom: 2px solid black;
+            font-size: 0.8em;
+        }
+
+        .days div {
+            padding: 10px 0;
+            border-right: 1px solid #ccc;
+        }
+        .days div:last-child {
+            border-right: none;
+        }
+
+        .dates {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-auto-rows: minmax(50px, auto); /* Altura mínima para las celdas */
+        }
+
+        .date {
+            padding: 5px;
+            text-align: right; /* Números alineados a la derecha como en la imagen */
+            border-right: 1px solid black;
+            border-bottom: 1px solid black;
+            box-sizing: border-box;
+            color: #000;
+        }
+        
+        /* Borde exterior más grueso para la cuadrícula de fechas simulando la imagen */
+        .dates {
+            border-left: 2px solid black;
+        }
+        
+        .date:nth-child(7n) {
+            border-right: none;
+        }
+
+        .date.inactive {
+            color: #aaa;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calendar">
+        <div class="header">
+            <button id="prevBtn">&lt;</button>
+            <div class="month-year">
+                <span id="month"></span>
+                <select id="yearSelect"></select>
+            </div>
+            <button id="nextBtn">&gt;</button>
+        </div>
+        <div class="days">
+            <div>LUN</div>
+            <div>MAR</div>
+            <div>MIÉ</div>
+            <div>JUE</div>
+            <div>VIE</div>
+            <div>SÁB</div>
+            <div>DOM</div>
+        </div>
+        <div class="dates" id="dates"></div>
+    </div>
+
+    <script>
+        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        const yearSelect = document.getElementById('yearSelect');
+        const monthSpan = document.getElementById('month');
+        const datesContainer = document.getElementById('dates');
+        const prevBtn = document.
