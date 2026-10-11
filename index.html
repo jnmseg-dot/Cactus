@@ -17,7 +17,6 @@
             box-sizing: border-box;
         }
 
-        /* Contenedor para poner el calendario y las estadísticas lado a lado */
         .main-container {
             display: flex;
             flex-wrap: wrap;
@@ -146,18 +145,13 @@
             font-weight: bold;
         }
 
+        /* --- NUEVO ESTILO DEL DESPLEGABLE --- */
         .legend {
             margin-top: 25px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
-        }
-
-        .legend label {
-            font-weight: bold;
-            font-size: 1.1em;
-            color: #333;
+            width: 100%;
         }
 
         .legend select {
@@ -170,6 +164,8 @@
             font-weight: bold;
             background-color: white;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 250px;
+            text-align: center;
         }
 
         .legend select:hover {
@@ -210,11 +206,11 @@
         }
 
         /* Colores aplicados al contenedor de la fecha */
-        .date.guardia { background-color: #ff4d4d; color: white; }
-        .date.ref-ob { background-color: #ffa07a; }
-        .date.ref-vol { background-color: #90ee90; }
-        .date.eventos { background-color: #add8e6; }
-        .date.otros { background-color: #ffffe0; }
+        .date.guardia { background-color: #ff4d4d !important; color: white; }
+        .date.ref-ob { background-color: #ffa07a !important; color: black; }
+        .date.ref-vol { background-color: #90ee90 !important; color: black; }
+        .date.eventos { background-color: #add8e6 !important; color: black; }
+        .date.otros { background-color: #ffffe0 !important; color: black; }
     </style>
 </head>
 <body>
@@ -244,10 +240,10 @@
                 <div class="dates" id="dates"></div>
             </div>
 
+            <!-- Desplegable modificado con el título dentro -->
             <div class="legend">
-                <label for="tipoGuardiaSelect">Tipo de guardia:</label>
                 <select id="tipoGuardiaSelect">
-                    <option value="">-- Pincel desactivado --</option>
+                    <option value="" disabled selected hidden>Tipo de guardia:</option>
                     <option value="guardia">🔴 Guardia</option>
                     <option value="ref-ob">🟠 Refuerzo obligatorio</option>
                     <option value="ref-vol">🟢 Refuerzo voluntario</option>
@@ -277,7 +273,6 @@
         const nextBtn = document.getElementById('nextBtn');
         const tipoGuardiaSelect = document.getElementById('tipoGuardiaSelect');
 
-        // Elementos de texto de las estadísticas
         const valSolapes = document.getElementById('countSolapes');
         const valNocturnos = document.getElementById('countNocturnos');
         const valFestivos = document.getElementById('countFestivos');
@@ -301,23 +296,18 @@
             { mes: 11, dia: 7 },  { mes: 11, dia: 8 }, { mes: 11, dia: 25 }
         ];
 
-        // Función para actualizar las variables cada vez que haya un cambio
         function updateStats() {
             let solapes = 0;
             let nocturnos = 0;
-            let festivosGuardia = 0; // A la espera de instrucciones futuras
+            let festivosGuardia = 0; 
 
-            // Recorremos todos los días que hemos pintado
             for (const dateKey in paintedDays) {
-                // dateKey tiene el formato "AÑO-MES-DIA", ej: "2026-9-15"
                 const parts = dateKey.split('-');
                 const dYear = parseInt(parts[0]);
                 const dMonth = parseInt(parts[1]);
 
-                // Solo calculamos si el día pertenece al mes y año que estamos viendo en pantalla
                 if (dYear === currentYear && dMonth === currentMonth) {
                     const tipo = paintedDays[dateKey];
-                    // Si el turno es Guardia, Refuerzo obligatorio o Refuerzo voluntario, suma +1
                     if (tipo === 'guardia' || tipo === 'ref-ob' || tipo === 'ref-vol') {
                         solapes++;
                         nocturnos++;
@@ -325,7 +315,145 @@
                 }
             }
 
-            // Actualizamos los números en el recuadro de la derecha
             valSolapes.textContent = solapes;
             valNocturnos.textContent = nocturnos;
-            valFestivos.textContent = festivosGuardia
+            valFestivos.textContent = festivosGuardia;
+        }
+
+        tipoGuardiaSelect.addEventListener('change', (e) => {
+            if (e.target.value === "") {
+                currentColor = null;
+            } else {
+                currentColor = e.target.value;
+            }
+        });
+
+        datesContainer.addEventListener('click', (e) => {
+            const targetDate = e.target.closest('.date'); 
+            
+            if (targetDate && !targetDate.classList.contains('inactive')) {
+                if (!currentColor) return; 
+
+                const dayNumberSpan = targetDate.querySelector('.day-number');
+                if (!dayNumberSpan) return;
+                
+                const dayNumber = dayNumberSpan.textContent.trim();
+                const dateKey = `${currentYear}-${currentMonth}-${dayNumber}`; 
+
+                targetDate.classList.remove('guardia', 'ref-ob', 'ref-vol', 'eventos', 'otros');
+                
+                if (currentColor === 'borrar') {
+                    delete paintedDays[dateKey];
+                } else {
+                    targetDate.classList.add(currentColor);
+                    paintedDays[dateKey] = currentColor;
+                }
+                
+                updateStats();
+            }
+        });
+
+        function initYearSelect() {
+            yearSelect.innerHTML = '';
+            for (let y = 2024; y <= 2035; y++) {
+                let option = document.createElement('option');
+                option.value = y;
+                option.text = y;
+                yearSelect.appendChild(option);
+            }
+            yearSelect.value = currentYear;
+            
+            yearSelect.addEventListener('change', () => {
+                currentYear = parseInt(yearSelect.value);
+                renderCalendar();
+            });
+        }
+
+        function renderCalendar() {
+            monthSpan.textContent = monthNames[currentMonth];
+            yearSelect.value = currentYear; 
+            datesContainer.innerHTML = ''; 
+
+            const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+            let startDay = firstDayIndex === 0 ? 6 : firstDayIndex - 1; 
+
+            const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const prevLastDate = new Date(currentYear, currentMonth, 0).getDate();
+            const lastDayIndex = new Date(currentYear, currentMonth, lastDate).getDay();
+            let endDays = lastDayIndex === 0 ? 0 : 7 - lastDayIndex;
+
+            for (let i = startDay; i > 0; i--) {
+                const dateDiv = document.createElement('div');
+                dateDiv.classList.add('date', 'inactive');
+                
+                const spanNum = document.createElement('span');
+                spanNum.classList.add('day-number');
+                spanNum.textContent = prevLastDate - i + 1;
+                dateDiv.appendChild(spanNum);
+                
+                datesContainer.appendChild(dateDiv);
+            }
+
+            for (let i = 1; i <= lastDate; i++) {
+                const dateDiv = document.createElement('div');
+                dateDiv.classList.add('date');
+                
+                const spanNum = document.createElement('span');
+                spanNum.classList.add('day-number');
+                spanNum.textContent = i;
+
+                const esFestivo = festivos.some(festivo => festivo.mes === currentMonth && festivo.dia === i);
+                if (esFestivo) {
+                    spanNum.classList.add('festivo');
+                }
+
+                dateDiv.appendChild(spanNum);
+                
+                const dateKey = `${currentYear}-${currentMonth}-${i}`;
+                if (paintedDays[dateKey]) {
+                    dateDiv.classList.add(paintedDays[dateKey]);
+                }
+                
+                datesContainer.appendChild(dateDiv);
+            }
+
+            for (let i = 1; i <= endDays; i++) {
+                const dateDiv = document.createElement('div');
+                dateDiv.classList.add('date', 'inactive');
+                
+                const spanNum = document.createElement('span');
+                spanNum.classList.add('day-number');
+                spanNum.textContent = i;
+                dateDiv.appendChild(spanNum);
+                
+                datesContainer.appendChild(dateDiv);
+            }
+
+            updateStats();
+        }
+
+        prevBtn.addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+                if(currentYear < 2024) currentYear = 2024;
+            }
+            renderCalendar();
+        });
+
+        nextBtn.addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+                if(currentYear > 2035) currentYear = 2035;
+            }
+            renderCalendar();
+        });
+
+        initYearSelect();
+        renderCalendar();
+    </script>
+</body>
+</html>
