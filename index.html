@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendario Cactus</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -292,6 +293,14 @@
             { mes: 11, dia: 7 },  { mes: 11, dia: 8 }, { mes: 11, dia: 25 }
         ];
 
+        // Función auxiliar para saber si un día concreto es festivo (o fin de semana)
+        function isFestivo(dYear, dMonth, dDay) {
+            const date = new Date(dYear, dMonth, dDay);
+            const dayOfWeek = date.getDay();
+            if (dayOfWeek === 0 || dayOfWeek === 6) return true; // Domingo o Sábado
+            return festivos.some(f => f.mes === dMonth && f.dia === dDay);
+        }
+
         function updateStats() {
             let solapes = 0;
             let nocturnos = 0;
@@ -301,12 +310,43 @@
                 const parts = dateKey.split('-');
                 const dYear = parseInt(parts[0]);
                 const dMonth = parseInt(parts[1]);
+                const dDay = parseInt(parts[2]);
 
                 if (dYear === currentYear && dMonth === currentMonth) {
                     const tipo = paintedDays[dateKey];
                     if (tipo === 'guardia' || tipo === 'ref-ob' || tipo === 'ref-vol') {
                         solapes++;
                         nocturnos++;
+
+                        // ---- LÓGICA DE FESTIVOS ----
+                        const todayIsFestivo = isFestivo(dYear, dMonth, dDay);
+                        
+                        // Miramos el día de mañana para saber si es víspera o si hay 2 festivos seguidos
+                        const tomorrow = new Date(dYear, dMonth, dDay + 1);
+                        const tomorrowIsFestivo = isFestivo(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
+                        
+                        const dayOfWeek = new Date(dYear, dMonth, dDay).getDay();
+
+                        if (todayIsFestivo) {
+                            if (dayOfWeek === 6) {
+                                // 1. Si es Sábado: 1,5 puntos (independientemente de mañana)
+                                festivosGuardia += 1.5;
+                            } else {
+                                if (tomorrowIsFestivo) {
+                                    // 2. Si hay dos festivos seguidos (y no es sábado): 2 puntos
+                                    festivosGuardia += 2;
+                                } else {
+                                    // 3. Si es Festivo normal, Domingo normal, o es el segundo festivo: 1 punto
+                                    festivosGuardia += 1;
+                                }
+                            }
+                        } else {
+                            // No es festivo hoy
+                            if (tomorrowIsFestivo) {
+                                // 4. Si mañana es festivo (víspera): 0,5 puntos
+                                festivosGuardia += 0.5;
+                            }
+                        }
                     }
                 }
             }
@@ -398,10 +438,8 @@
                 spanNum.classList.add('day-number');
                 spanNum.textContent = i;
 
-                // Calculamos qué día de la semana es (0 = Domingo, 6 = Sábado)
                 const currentDayOfWeek = new Date(currentYear, currentMonth, i).getDay();
                 
-                // Comprobamos si es festivo nacional/local O si es Sábado (6) O Domingo (0)
                 const esFestivo = festivos.some(festivo => festivo.mes === currentMonth && festivo.dia === i) 
                                   || currentDayOfWeek === 0 
                                   || currentDayOfWeek === 6;
