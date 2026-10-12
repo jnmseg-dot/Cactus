@@ -146,6 +146,31 @@
             font-weight: bold;
         }
 
+        /* --- CLASES ESPECIALES PARA DÍAS CON HORAS --- */
+        .date.has-hours {
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px; /* Pequeño margen interno */
+        }
+
+        .date.has-hours .day-number {
+            align-self: flex-start; /* Mueve el número a la esquina superior izquierda */
+            width: 18px; /* Lo hace más pequeño */
+            height: 18px;
+            font-size: 0.7em;
+            line-height: 18px;
+        }
+
+        .hours-display {
+            font-size: 0.75em;
+            line-height: 1.1;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 2px;
+        }
+
+        /* --- DESPLEGABLE Y CONTROLES --- */
         .legend {
             margin-top: 25px;
             display: flex;
@@ -172,10 +197,9 @@
             border-color: #555;
         }
 
-        /* ESTILOS DE LOS CAMPOS DE HORA */
         .time-inputs {
             margin-top: 15px;
-            display: none; /* Oculto por defecto */
+            display: none;
             flex-direction: column;
             gap: 12px;
             background-color: white;
@@ -247,13 +271,8 @@
         /* --- COLORES DE LOS TURNOS --- */
         .date.guardia { background-color: #ff4d4d !important; color: white; }
         .date.ref-ob { background-color: #ffa07a !important; color: black; }
-        
-        /* Verde normal para Refuerzo voluntario */
         .date.ref-vol { background-color: #90ee90 !important; color: black; }
-        
-        /* Verde MÁS CLARO para Refuerzo voluntario con horas */
         .date.ref-vol-horas { background-color: #d4f5d4 !important; color: black; }
-        
         .date.eventos { background-color: #add8e6 !important; color: black; }
         .date.otros { background-color: #ffffe0 !important; color: black; }
         .date.superior { background-color: purple !important; color: white; }
@@ -298,7 +317,6 @@
                     <option value="borrar">⚪ Borrar</option>
                 </select>
 
-                <!-- Cuadro de horas que aparece dinámicamente -->
                 <div id="timeInputs" class="time-inputs">
                     <div class="time-group">
                         <label for="horaInicio">Hora inicio:</label>
@@ -321,7 +339,6 @@
 
     </div>
 
-    <!-- TODO EL CÓDIGO JS SE EJECUTA AL CARGAR LA PÁGINA PARA EVITAR ERRORES -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
@@ -413,7 +430,6 @@
                 valFestivos.textContent = festivosGuardia;
             }
 
-            // Mostramos las casillas de horas si elige Refuerzo Horas o Eventos
             tipoGuardiaSelect.addEventListener('change', (e) => {
                 if (e.target.value === 'ref-vol-horas' || e.target.value === 'eventos') {
                     timeInputs.style.display = 'flex';
@@ -435,28 +451,31 @@
                     
                     const dayNumber = dayNumberSpan.textContent.trim();
                     const dateKey = `${currentYear}-${currentMonth}-${dayNumber}`; 
-
-                    // Borrar estilos previos
-                    targetDate.classList.remove('guardia', 'ref-ob', 'ref-vol', 'ref-vol-horas', 'eventos', 'otros', 'superior');
-                    targetDate.removeAttribute('title');
                     
                     if (currentColor === 'borrar') {
                         delete paintedDays[dateKey];
                     } else if (currentColor === 'ref-vol-horas' || currentColor === 'eventos') {
-                        // Obligamos a poner hora de inicio y de fin
                         if (!horaInicio.value || !horaFin.value) {
-                            alert("Por favor, pon una hora de inicio y una hora de fin en las casillas debajo del menú antes de hacer clic en un día.");
+                            alert("Por favor, introduce la hora de inicio y de fin en las casillas.");
                             return;
                         }
-                        targetDate.classList.add(currentColor);
-                        targetDate.title = `De ${horaInicio.value} a ${horaFin.value}`;
+                        
+                        // Guardamos el color y las horas
                         paintedDays[dateKey] = `${currentColor}|${horaInicio.value}|${horaFin.value}`;
+                        
+                        // AUTO-RESET: Vaciamos y ocultamos todo para forzar a elegir de nuevo
+                        horaInicio.value = '';
+                        horaFin.value = '';
+                        tipoGuardiaSelect.value = '';
+                        timeInputs.style.display = 'none';
+                        currentColor = null;
+
                     } else {
-                        targetDate.classList.add(currentColor);
                         paintedDays[dateKey] = currentColor;
                     }
                     
-                    updateStats();
+                    // Re-renderizamos todo el calendario para aplicar cambios, mover esquinas y escribir horas
+                    renderCalendar();
                 }
             });
 
@@ -523,10 +542,20 @@
                         const tipoBase = savedData.split('|')[0];
                         dateDiv.classList.add(tipoBase);
 
-                        // Si tiene horas guardadas, mostramos el cartel (title)
+                        // Si el día guardado tiene horas, cambiamos la estructura de la celda
                         if (tipoBase === 'ref-vol-horas' || tipoBase === 'eventos') {
                             const parts = savedData.split('|');
                             if (parts.length === 3) {
+                                // Aplicamos la clase que mueve el número a la esquina
+                                dateDiv.classList.add('has-hours');
+                                
+                                // Creamos el texto de las horas
+                                const hoursDiv = document.createElement('div');
+                                hoursDiv.classList.add('hours-display');
+                                hoursDiv.innerHTML = `${parts[1]}<br>${parts[2]}`;
+                                dateDiv.appendChild(hoursDiv);
+                                
+                                // Mantenemos también el título al pasar el ratón
                                 dateDiv.title = `De ${parts[1]} a ${parts[2]}`;
                             }
                         }
@@ -568,7 +597,6 @@
                 renderCalendar();
             });
 
-            // Inicializar el calendario
             initYearSelect();
             renderCalendar();
         });
