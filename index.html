@@ -146,17 +146,16 @@
             font-weight: bold;
         }
 
-        /* --- CLASES ESPECIALES PARA DÍAS CON HORAS --- */
         .date.has-hours {
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            padding: 3px; /* Pequeño margen interno */
+            padding: 3px; 
         }
 
         .date.has-hours .day-number {
-            align-self: flex-start; /* Mueve el número a la esquina superior izquierda */
-            width: 18px; /* Lo hace más pequeño */
+            align-self: flex-start; 
+            width: 18px; 
             height: 18px;
             font-size: 0.7em;
             line-height: 18px;
@@ -170,7 +169,6 @@
             margin-bottom: 2px;
         }
 
-        /* --- DESPLEGABLE Y CONTROLES --- */
         .legend {
             margin-top: 25px;
             display: flex;
@@ -268,7 +266,6 @@
             border-bottom: none;
         }
 
-        /* --- COLORES DE LOS TURNOS --- */
         .date.guardia { background-color: #ff4d4d !important; color: white; }
         .date.ref-ob { background-color: #ffa07a !important; color: black; }
         .date.ref-vol { background-color: #90ee90 !important; color: black; }
@@ -395,16 +392,18 @@
                     const dDay = parseInt(parts[2]);
 
                     if (dYear === currentYear && dMonth === currentMonth) {
-                        const tipoBase = paintedDays[dateKey].split('|')[0];
-                        
-                        if (tipoBase === 'guardia' || tipoBase === 'ref-ob' || tipoBase === 'ref-vol' || tipoBase === 'ref-vol-horas') {
+                        const savedData = paintedDays[dateKey].split('|');
+                        const tipoBase = savedData[0];
+
+                        const todayIsFestivo = isFestivo(dYear, dMonth, dDay);
+                        const tomorrow = new Date(dYear, dMonth, dDay + 1);
+                        const tomorrowIsFestivo = isFestivo(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
+                        const dayOfWeek = new Date(dYear, dMonth, dDay).getDay();
+
+                        // 1. Turnos fijos normales con la lógica compleja original
+                        if (tipoBase === 'guardia' || tipoBase === 'ref-ob' || tipoBase === 'ref-vol') {
                             solapes++;
                             nocturnos++;
-
-                            const todayIsFestivo = isFestivo(dYear, dMonth, dDay);
-                            const tomorrow = new Date(dYear, dMonth, dDay + 1);
-                            const tomorrowIsFestivo = isFestivo(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
-                            const dayOfWeek = new Date(dYear, dMonth, dDay).getDay();
 
                             if (todayIsFestivo) {
                                 if (dayOfWeek === 6) {
@@ -420,6 +419,41 @@
                                 if (tomorrowIsFestivo) {
                                     festivosGuardia += 0.5;
                                 }
+                            }
+                        } 
+                        // 2. Refuerzo voluntario con horas (Nueva Lógica)
+                        else if (tipoBase === 'ref-vol-horas') {
+                            solapes++;
+                            
+                            let hInicio = savedData[1];
+                            let hFin = savedData[2];
+                            
+                            // Lógica de horas nocturnas (cruce de medianoche o fin después de 22:00)
+                            if (hInicio > hFin) { 
+                                // Cruza la medianoche
+                                if (hFin > "03:00") nocturnos += 1;
+                                else nocturnos += 0.5;
+                            } else {
+                                // No cruza la medianoche
+                                if (hFin > "22:00") nocturnos += 0.5;
+                            }
+
+                            // Si es festivo, suma +1 puro (sin lógica compleja)
+                            if (todayIsFestivo) {
+                                festivosGuardia += 1;
+                            }
+                        } 
+                        // 3. Eventos con horas (Nueva Lógica)
+                        else if (tipoBase === 'eventos') {
+                            let hInicio = savedData[1];
+                            let hFin = savedData[2];
+                            
+                            // Lógica de horas nocturnas igual que arriba
+                            if (hInicio > hFin) { 
+                                if (hFin > "03:00") nocturnos += 1;
+                                else nocturnos += 0.5;
+                            } else {
+                                if (hFin > "22:00") nocturnos += 0.5;
                             }
                         }
                     }
@@ -460,10 +494,9 @@
                             return;
                         }
                         
-                        // Guardamos el color y las horas
                         paintedDays[dateKey] = `${currentColor}|${horaInicio.value}|${horaFin.value}`;
                         
-                        // AUTO-RESET: Vaciamos y ocultamos todo para forzar a elegir de nuevo
+                        // AUTO-RESET tras pintar
                         horaInicio.value = '';
                         horaFin.value = '';
                         tipoGuardiaSelect.value = '';
@@ -474,7 +507,6 @@
                         paintedDays[dateKey] = currentColor;
                     }
                     
-                    // Re-renderizamos todo el calendario para aplicar cambios, mover esquinas y escribir horas
                     renderCalendar();
                 }
             });
@@ -542,20 +574,16 @@
                         const tipoBase = savedData.split('|')[0];
                         dateDiv.classList.add(tipoBase);
 
-                        // Si el día guardado tiene horas, cambiamos la estructura de la celda
                         if (tipoBase === 'ref-vol-horas' || tipoBase === 'eventos') {
                             const parts = savedData.split('|');
                             if (parts.length === 3) {
-                                // Aplicamos la clase que mueve el número a la esquina
                                 dateDiv.classList.add('has-hours');
                                 
-                                // Creamos el texto de las horas
                                 const hoursDiv = document.createElement('div');
                                 hoursDiv.classList.add('hours-display');
                                 hoursDiv.innerHTML = `${parts[1]}<br>${parts[2]}`;
                                 dateDiv.appendChild(hoursDiv);
                                 
-                                // Mantenemos también el título al pasar el ratón
                                 dateDiv.title = `De ${parts[1]} a ${parts[2]}`;
                             }
                         }
