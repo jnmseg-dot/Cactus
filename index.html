@@ -308,7 +308,7 @@
                     <option value="ref-ob">🟠 Refuerzo obligatorio</option>
                     <option value="ref-vol">🟢 Refuerzo voluntario</option>
                     <option value="ref-vol-horas">🟢 Refuerzo voluntario (Horas)</option>
-                    <option value="eventos">🔵 Eventos</option>
+                    <option value="eventos">🔵 Eventos (Horas)</option>
                     <option value="otros">🟡 Otros</option>
                     <option value="superior">🟣 Superior Categoría</option>
                     <option value="borrar">⚪ Borrar</option>
@@ -380,6 +380,20 @@
                 return festivos.some(f => f.mes === dMonth && f.dia === dDay);
             }
 
+            // Convierte una hora "HH:MM" a minutos dentro de la jornada (09:00 de hoy = 540 hasta 09:00 de mañana = 1980)
+            function timeToShiftMinutes(timeStr, isEndTime) {
+                const [h, m] = timeStr.split(':').map(Number);
+                let mins = h * 60 + m;
+                if (isEndTime) {
+                    // Si la hora de fin es entre 00:00 y 09:00 (incluidas), pertenece a la madrugada siguiente
+                    if (mins <= 540) mins += 1440;
+                } else {
+                    // Si la hora de inicio es entre 00:00 y 08:59, pertenece a la madrugada siguiente
+                    if (mins < 540) mins += 1440;
+                }
+                return mins;
+            }
+
             function updateStats() {
                 let solapes = 0;
                 let nocturnos = 0;
@@ -400,7 +414,7 @@
                         const tomorrowIsFestivo = isFestivo(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
                         const dayOfWeek = new Date(dYear, dMonth, dDay).getDay();
 
-                        // 1. Turnos fijos normales con la lógica compleja original
+                        // 1º TIPO: Jornadas de 24h (Guardia, Refuerzo obligatorio, Refuerzo voluntario)
                         if (tipoBase === 'guardia' || tipoBase === 'ref-ob' || tipoBase === 'ref-vol') {
                             solapes++;
                             nocturnos++;
@@ -421,39 +435,54 @@
                                 }
                             }
                         } 
-                        // 2. Refuerzo voluntario con horas (Nueva Lógica)
-                        else if (tipoBase === 'ref-vol-horas') {
-                            solapes++;
+                        // 2º TIPO: Jornadas por horas (Refuerzo voluntario (Horas) y Eventos (Horas))
+                        else if (tipoBase === 'ref-vol-horas' || tipoBase === 'eventos') {
+                            if (tipoBase === 'ref-vol-horas') {
+                                solapes++;
+                            }
                             
-                            let hInicio = savedData[1];
-                            let hFin = savedData[2];
+                            const hInicio = savedData[1];
+                            const hFin = savedData[2];
                             
-                            // Lógica de horas nocturnas (cruce de medianoche o fin después de 22:00)
-                            if (hInicio > hFin) { 
-                                // Cruza la medianoche
-                                if (hFin > "03:00") nocturnos += 1;
-                                else nocturnos += 0.5;
-                            } else {
-                                // No cruza la medianoche
-                                if (hFin > "22:00") nocturnos += 0.5;
+                            const minI = timeToShiftMinutes(hInicio, false);
+                            let minF = timeToShiftMinutes(hFin, true);
+                            if (minF <= minI) {
+                                minF += 1440; // Seguridad adicional por si cruza medianoche
                             }
 
-                            // Si es festivo, suma +1 puro (sin lógica compleja)
-                            if (todayIsFestivo) {
-                                festivosGuardia += 1;
+                            // --- CÁLCULO DE NOCTURNOS ---
+                            // 22:00 = 1320 min | 03:00 (madrugada) = 1620 min
+                            if (minF > 1620) {
+                                nocturnos += 1;
+                            } else if (minF > 1320) {
+                                nocturnos += 0.5;
                             }
-                        } 
-                        // 3. Eventos con horas (Nueva Lógica)
-                        else if (tipoBase === 'eventos') {
-                            let hInicio = savedData[1];
-                            let hFin = savedData[2];
-                            
-                            // Lógica de horas nocturnas igual que arriba
-                            if (hInicio > hFin) { 
-                                if (hFin > "03:00") nocturnos += 1;
-                                else nocturnos += 0.5;
-                            } else {
-                                if (hFin > "22:00") nocturnos += 0.5;
+
+                            // --- CÁLCULO DE FESTIVOS POR TRAMOS ---
+                            // Tramo 1: De 09:00 (540) a 24:00 (1440) del día seleccionado
+                            const startTramo1 = Math.max(minI, 540);
+                            const endTramo1 = Math.min(minF, 1440);
+                            const duracionTramo1 = Math.max(0, endTramo1 - startTramo1); // en minutos
+
+                            if (duracionTramo1 > 0 && todayIsFestivo) {
+                                if (duracionTramo1 <= 300) { // Hasta 5 horas (300 min) incluidas
+                                    festivosGuardia += 0.5;
+                                } else { // Más de 5 horas
+                                    festivosGuardia += 1;
+                                }
+                            }
+
+                            // Tramo 2: De 00:00 (1440) a 09:00 (1980) del día siguiente
+                            const startTramo2 = Math.max(minI, 1440);
+                            const endTramo2 = Math.min(minF, 1980);
+                            const duracionTramo2 = Math.max(0, endTramo2 - startTramo2); // en minutos
+
+                            if (duracionTramo2 > 0 && tomorrowIsFestivo) {
+                                if (duracionTramo2 <= 300) { // Hasta 5 horas (300 min) incluidas
+                                    festivosGuardia += 0.5;
+                                } else { // Más de 5 horas
+                                    festivosGuardia += 1;
+                                }
                             }
                         }
                     }
