@@ -18,6 +18,109 @@
             box-sizing: border-box;
         }
 
+        /* --- BOTÓN Y VENTANA EMERGENTE DE PERFIL --- */
+        .profile-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: white;
+            border: 2px solid black;
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-weight: bold;
+            font-size: 1em;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: 0.2s;
+            z-index: 100;
+        }
+
+        .profile-btn:hover {
+            background-color: #e9ecef;
+        }
+
+        .modal-overlay {
+            display: none; /* Oculto por defecto */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .modal-overlay.active {
+            display: flex; /* Se muestra al hacer clic en Perfil */
+        }
+
+        .profile-modal {
+            background-color: white;
+            border: 2px solid black;
+            border-radius: 8px;
+            padding: 25px;
+            width: 320px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-sizing: border-box;
+        }
+
+        .profile-modal h3 {
+            margin: 0;
+            border-bottom: 2px solid black;
+            padding-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+            font-size: 1.2em;
+        }
+
+        .profile-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .profile-group label {
+            font-weight: bold;
+            font-size: 0.95em;
+            color: #333;
+        }
+
+        .profile-group select,
+        .profile-group input {
+            padding: 8px 10px;
+            font-size: 1em;
+            border-radius: 6px;
+            border: 2px solid #000;
+            font-family: inherit;
+            font-weight: bold;
+            background-color: white;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .close-modal-btn {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #000;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1em;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .close-modal-btn:hover {
+            background-color: #333;
+        }
+
+        /* --- ESTILOS DEL CALENDARIO Y PANELES --- */
         .main-container {
             display: flex;
             flex-wrap: wrap;
@@ -277,6 +380,43 @@
 </head>
 <body>
 
+    <!-- Botón de Perfil en la esquina superior derecha -->
+    <button id="profileBtn" class="profile-btn">Perfil</button>
+
+    <!-- Ventana Emergente de Perfil -->
+    <div id="profileModalOverlay" class="modal-overlay">
+        <div class="profile-modal">
+            <h3>Perfil</h3>
+            
+            <div class="profile-group">
+                <label for="perfilTurno">Turno:</label>
+                <select id="perfilTurno">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
+
+            <div class="profile-group">
+                <label for="perfilCategoria">Categoría:</label>
+                <select id="perfilCategoria">
+                    <option value="bombero">Bombero</option>
+                    <option value="jefe-dotacion">Jefe de dotación ▲▲</option>
+                    <option value="jefe-turno">Jefe de Turno ▲▲▲</option>
+                </select>
+            </div>
+
+            <div class="profile-group">
+                <label for="perfilFechaIngreso">Fecha de ingreso:</label>
+                <input type="date" id="perfilFechaIngreso">
+            </div>
+
+            <button id="closeProfileBtn" class="close-modal-btn">Guardar y cerrar</button>
+        </div>
+    </div>
+
     <div class="main-container">
         
         <div class="calendar-section">
@@ -354,6 +494,28 @@
             const valNocturnos = document.getElementById('countNocturnos');
             const valFestivos = document.getElementById('countFestivos');
 
+            // Elementos del Perfil
+            const profileBtn = document.getElementById('profileBtn');
+            const profileModalOverlay = document.getElementById('profileModalOverlay');
+            const closeProfileBtn = document.getElementById('closeProfileBtn');
+
+            // Abrir ventana de Perfil
+            profileBtn.addEventListener('click', () => {
+                profileModalOverlay.classList.add('active');
+            });
+
+            // Cerrar ventana con el botón
+            closeProfileBtn.addEventListener('click', () => {
+                profileModalOverlay.classList.remove('active');
+            });
+
+            // Cerrar ventana si se hace clic fuera de la caja blanca
+            profileModalOverlay.addEventListener('click', (e) => {
+                if (e.target === profileModalOverlay) {
+                    profileModalOverlay.classList.remove('active');
+                }
+            });
+
             let currentDate = new Date();
             let currentMonth = currentDate.getMonth();
             let currentYear = currentDate.getFullYear();
@@ -380,15 +542,12 @@
                 return festivos.some(f => f.mes === dMonth && f.dia === dDay);
             }
 
-            // Convierte una hora "HH:MM" a minutos dentro de la jornada (09:00 de hoy = 540 hasta 09:00 de mañana = 1980)
             function timeToShiftMinutes(timeStr, isEndTime) {
                 const [h, m] = timeStr.split(':').map(Number);
                 let mins = h * 60 + m;
                 if (isEndTime) {
-                    // Si la hora de fin es entre 00:00 y 09:00 (incluidas), pertenece a la madrugada siguiente
                     if (mins <= 540) mins += 1440;
                 } else {
-                    // Si la hora de inicio es entre 00:00 y 08:59, pertenece a la madrugada siguiente
                     if (mins < 540) mins += 1440;
                 }
                 return mins;
@@ -414,7 +573,7 @@
                         const tomorrowIsFestivo = isFestivo(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
                         const dayOfWeek = new Date(dYear, dMonth, dDay).getDay();
 
-                        // 1º TIPO: Jornadas de 24h (Guardia, Refuerzo obligatorio, Refuerzo voluntario)
+                        // 1º TIPO: Jornadas de 24h
                         if (tipoBase === 'guardia' || tipoBase === 'ref-ob' || tipoBase === 'ref-vol') {
                             solapes++;
                             nocturnos++;
@@ -435,7 +594,7 @@
                                 }
                             }
                         } 
-                        // 2º TIPO: Jornadas por horas (Refuerzo voluntario (Horas) y Eventos (Horas))
+                        // 2º TIPO: Jornadas por horas
                         else if (tipoBase === 'ref-vol-horas' || tipoBase === 'eventos') {
                             if (tipoBase === 'ref-vol-horas') {
                                 solapes++;
@@ -447,40 +606,38 @@
                             const minI = timeToShiftMinutes(hInicio, false);
                             let minF = timeToShiftMinutes(hFin, true);
                             if (minF <= minI) {
-                                minF += 1440; // Seguridad adicional por si cruza medianoche
+                                minF += 1440;
                             }
 
-                            // --- CÁLCULO DE NOCTURNOS ---
-                            // 22:00 = 1320 min | 03:00 (madrugada) = 1620 min
+                            // Cálculo de nocturnos
                             if (minF > 1620) {
                                 nocturnos += 1;
                             } else if (minF > 1320) {
                                 nocturnos += 0.5;
                             }
 
-                            // --- CÁLCULO DE FESTIVOS POR TRAMOS ---
-                            // Tramo 1: De 09:00 (540) a 24:00 (1440) del día seleccionado
+                            // Cálculo de festivos Tramo 1 (09:00 a 24:00)
                             const startTramo1 = Math.max(minI, 540);
                             const endTramo1 = Math.min(minF, 1440);
-                            const duracionTramo1 = Math.max(0, endTramo1 - startTramo1); // en minutos
+                            const duracionTramo1 = Math.max(0, endTramo1 - startTramo1);
 
                             if (duracionTramo1 > 0 && todayIsFestivo) {
-                                if (duracionTramo1 <= 300) { // Hasta 5 horas (300 min) incluidas
+                                if (duracionTramo1 <= 300) {
                                     festivosGuardia += 0.5;
-                                } else { // Más de 5 horas
+                                } else {
                                     festivosGuardia += 1;
                                 }
                             }
 
-                            // Tramo 2: De 00:00 (1440) a 09:00 (1980) del día siguiente
+                            // Cálculo de festivos Tramo 2 (00:00 a 09:00 del día siguiente)
                             const startTramo2 = Math.max(minI, 1440);
                             const endTramo2 = Math.min(minF, 1980);
-                            const duracionTramo2 = Math.max(0, endTramo2 - startTramo2); // en minutos
+                            const duracionTramo2 = Math.max(0, endTramo2 - startTramo2);
 
                             if (duracionTramo2 > 0 && tomorrowIsFestivo) {
-                                if (duracionTramo2 <= 300) { // Hasta 5 horas (300 min) incluidas
+                                if (duracionTramo2 <= 300) {
                                     festivosGuardia += 0.5;
-                                } else { // Más de 5 horas
+                                } else {
                                     festivosGuardia += 1;
                                 }
                             }
@@ -548,115 +705,3 @@
                     option.text = y;
                     yearSelect.appendChild(option);
                 }
-                yearSelect.value = currentYear;
-                
-                yearSelect.addEventListener('change', () => {
-                    currentYear = parseInt(yearSelect.value);
-                    renderCalendar();
-                });
-            }
-
-            function renderCalendar() {
-                monthSpan.textContent = monthNames[currentMonth];
-                yearSelect.value = currentYear; 
-                datesContainer.innerHTML = ''; 
-
-                const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
-                let startDay = firstDayIndex === 0 ? 6 : firstDayIndex - 1; 
-
-                const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
-                const prevLastDate = new Date(currentYear, currentMonth, 0).getDate();
-                const lastDayIndex = new Date(currentYear, currentMonth, lastDate).getDay();
-                let endDays = lastDayIndex === 0 ? 0 : 7 - lastDayIndex;
-
-                for (let i = startDay; i > 0; i--) {
-                    const dateDiv = document.createElement('div');
-                    dateDiv.classList.add('date', 'inactive');
-                    const spanNum = document.createElement('span');
-                    spanNum.classList.add('day-number');
-                    spanNum.textContent = prevLastDate - i + 1;
-                    dateDiv.appendChild(spanNum);
-                    datesContainer.appendChild(dateDiv);
-                }
-
-                for (let i = 1; i <= lastDate; i++) {
-                    const dateDiv = document.createElement('div');
-                    dateDiv.classList.add('date');
-                    const spanNum = document.createElement('span');
-                    spanNum.classList.add('day-number');
-                    spanNum.textContent = i;
-
-                    const currentDayOfWeek = new Date(currentYear, currentMonth, i).getDay();
-                    const esFestivo = festivos.some(festivo => festivo.mes === currentMonth && festivo.dia === i) 
-                                      || currentDayOfWeek === 0 
-                                      || currentDayOfWeek === 6;
-
-                    if (esFestivo) {
-                        spanNum.classList.add('festivo');
-                    }
-
-                    dateDiv.appendChild(spanNum);
-                    
-                    const dateKey = `${currentYear}-${currentMonth}-${i}`;
-                    if (paintedDays[dateKey]) {
-                        const savedData = paintedDays[dateKey];
-                        const tipoBase = savedData.split('|')[0];
-                        dateDiv.classList.add(tipoBase);
-
-                        if (tipoBase === 'ref-vol-horas' || tipoBase === 'eventos') {
-                            const parts = savedData.split('|');
-                            if (parts.length === 3) {
-                                dateDiv.classList.add('has-hours');
-                                
-                                const hoursDiv = document.createElement('div');
-                                hoursDiv.classList.add('hours-display');
-                                hoursDiv.innerHTML = `${parts[1]}<br>${parts[2]}`;
-                                dateDiv.appendChild(hoursDiv);
-                                
-                                dateDiv.title = `De ${parts[1]} a ${parts[2]}`;
-                            }
-                        }
-                    }
-                    
-                    datesContainer.appendChild(dateDiv);
-                }
-
-                for (let i = 1; i <= endDays; i++) {
-                    const dateDiv = document.createElement('div');
-                    dateDiv.classList.add('date', 'inactive');
-                    const spanNum = document.createElement('span');
-                    spanNum.classList.add('day-number');
-                    spanNum.textContent = i;
-                    dateDiv.appendChild(spanNum);
-                    datesContainer.appendChild(dateDiv);
-                }
-
-                updateStats();
-            }
-
-            prevBtn.addEventListener('click', () => {
-                currentMonth--;
-                if (currentMonth < 0) {
-                    currentMonth = 11;
-                    currentYear--;
-                    if(currentYear < 2024) currentYear = 2024;
-                }
-                renderCalendar();
-            });
-
-            nextBtn.addEventListener('click', () => {
-                currentMonth++;
-                if (currentMonth > 11) {
-                    currentMonth = 0;
-                    currentYear++;
-                    if(currentYear > 2035) currentYear = 2035;
-                }
-                renderCalendar();
-            });
-
-            initYearSelect();
-            renderCalendar();
-        });
-    </script>
-</body>
-</html>
