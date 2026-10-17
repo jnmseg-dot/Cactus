@@ -18,7 +18,6 @@
             box-sizing: border-box;
         }
 
-        /* --- BOTÓN Y VENTANA EMERGENTE DE PERFIL --- */
         .profile-btn {
             position: fixed;
             top: 20px;
@@ -120,7 +119,6 @@
             background-color: #333;
         }
 
-        /* --- ESTILOS DEL CALENDARIO Y PANELES --- */
         .main-container {
             display: flex;
             flex-wrap: wrap;
@@ -389,6 +387,7 @@
             <div class="profile-group">
                 <label for="perfilTurno">Turno:</label>
                 <select id="perfilTurno">
+                    <option value="" disabled selected hidden>Selecciona tu turno</option>
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -441,8 +440,8 @@
 
             <div class="legend">
                 <select id="tipoGuardiaSelect">
-                    <option value="" disabled selected hidden>Tipo de guardia:</option>
-                    <option value="guardia">🔴 Guardia</option>
+                    <option value="" disabled selected hidden>Selecciona para pintar:</option>
+                    <!-- Eliminada la opción Guardia -->
                     <option value="ref-ob">🟠 Refuerzo obligatorio</option>
                     <option value="ref-vol">🟢 Refuerzo voluntario</option>
                     <option value="ref-vol-horas">🟢 Refuerzo voluntario (Horas)</option>
@@ -496,12 +495,92 @@
             const profileModalOverlay = document.getElementById('profileModalOverlay');
             const closeProfileBtn = document.getElementById('closeProfileBtn');
 
+            // Variables para guardar los datos del perfil
+            let perfilTurnoAsignado = null;
+            let perfilFechaIngreso = null;
+
+            // Algoritmo para generar el mapa de turnos de todos los años
+            const turnosMap = {};
+            function initTurnos() {
+                let foundMatch = false;
+                // Probamos cuál de los 5 turnos arrancó el 1 de enero de 2024 para que el 14/10/2026 sea el 1
+                for(let start = 1; start <= 5; start++) {
+                    let currentShift = start;
+                    let testTurnos = {};
+                    let flags = {};
+
+                    let d = new Date(2024, 0, 1);
+                    let endD = new Date(2035, 11, 31);
+
+                    while (d <= endD) {
+                        let y = d.getFullYear();
+                        let m = d.getMonth();
+                        let date = d.getDate();
+
+                        // Determinar el turno afectado por el correturnos este año
+                        let correturnosAfectado = 0;
+                        if (y === 2025) correturnosAfectado = 5;
+                        else if (y === 2026) correturnosAfectado = 1;
+                        else if (y === 2027) correturnosAfectado = 2;
+                        else if (y === 2029) correturnosAfectado = 3;
+                        else if (y === 2030) correturnosAfectado = 4;
+                        else if (y === 2031) correturnosAfectado = 5;
+                        else if (y === 2033) correturnosAfectado = 1;
+                        else if (y === 2034) correturnosAfectado = 2;
+                        else if (y === 2035) correturnosAfectado = 3;
+
+                        // Si es marzo, hay afectado, es su turno y aún no ha saltado este año
+                        if (m === 2 && correturnosAfectado > 0 && currentShift === correturnosAfectado) {
+                            let keyFlag = `corr_${y}`;
+                            if (!flags[keyFlag]) {
+                                flags[keyFlag] = true;
+                                currentShift = (currentShift % 5) + 1; // Se salta a sí mismo
+                            }
+                        }
+
+                        testTurnos[`${y}-${m}-${date}`] = currentShift;
+
+                        // Comprobar la fecha ancla solicitada
+                        if (y === 2026 && m === 9 && date === 14) {
+                            if (currentShift === 1) {
+                                foundMatch = true;
+                            }
+                        }
+
+                        // Avanzar la rueda normal
+                        currentShift = (currentShift % 5) + 1;
+                        d.setDate(d.getDate() + 1);
+                    }
+
+                    if (foundMatch) {
+                        Object.assign(turnosMap, testTurnos);
+                        break;
+                    }
+                }
+            }
+            // Ejecutamos el generador matemático
+            initTurnos();
+
             profileBtn.addEventListener('click', () => {
                 profileModalOverlay.classList.add('active');
             });
 
             closeProfileBtn.addEventListener('click', () => {
+                const turnoVal = document.getElementById('perfilTurno').value;
+                if (turnoVal) {
+                    perfilTurnoAsignado = parseInt(turnoVal);
+                }
+                
+                const fechaStr = document.getElementById('perfilFechaIngreso').value;
+                if (fechaStr) {
+                    const parts = fechaStr.split('-');
+                    perfilFechaIngreso = new Date(parts[0], parts[1] - 1, parts[2]);
+                } else {
+                    perfilFechaIngreso = new Date(2024, 0, 1); // Por defecto
+                }
+
                 profileModalOverlay.classList.remove('active');
+                renderCalendar(); // Refresca para pintar las nuevas guardias
             });
 
             profileModalOverlay.addEventListener('click', (e) => {
@@ -547,26 +626,41 @@
                 return mins;
             }
 
+            // Nueva función de estadísticas adaptada a las guardias automáticas
             function updateStats() {
                 let solapes = 0;
                 let nocturnos = 0;
                 let festivosGuardia = 0; 
+                
+                const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
 
-                for (const dateKey in paintedDays) {
-                    const parts = dateKey.split('-');
-                    const dYear = parseInt(parts[0]);
-                    const dMonth = parseInt(parts[1]);
-                    const dDay = parseInt(parts[2]);
+                for (let dDay = 1; dDay <= lastDate; dDay++) {
+                    const dateKey = `${currentYear}-${currentMonth}-${dDay}`;
+                    const cellDate = new Date(currentYear, currentMonth, dDay);
 
-                    if (dYear === currentYear && dMonth === currentMonth) {
-                        const savedData = paintedDays[dateKey].split('|');
-                        const tipoBase = savedData[0];
+                    let tipoBase = null;
+                    let savedData = null;
 
-                        const todayIsFestivo = isFestivo(dYear, dMonth, dDay);
-                        const tomorrow = new Date(dYear, dMonth, dDay + 1);
+                    // Si has pintado algo a mano, manda lo manual
+                    if (paintedDays[dateKey]) {
+                        savedData = paintedDays[dateKey].split('|');
+                        tipoBase = savedData[0];
+                    } 
+                    // Si no, comprobamos si le toca guardia automática por su Perfil
+                    else if (perfilTurnoAsignado && turnosMap[dateKey] === perfilTurnoAsignado) {
+                        if (perfilFechaIngreso && cellDate >= perfilFechaIngreso) {
+                            tipoBase = 'guardia';
+                            savedData = ['guardia'];
+                        }
+                    }
+
+                    if (tipoBase) {
+                        const todayIsFestivo = isFestivo(currentYear, currentMonth, dDay);
+                        const tomorrow = new Date(currentYear, currentMonth, dDay + 1);
                         const tomorrowIsFestivo = isFestivo(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
-                        const dayOfWeek = new Date(dYear, dMonth, dDay).getDay();
+                        const dayOfWeek = cellDate.getDay();
 
+                        // Lógica para 24h
                         if (tipoBase === 'guardia' || tipoBase === 'ref-ob' || tipoBase === 'ref-vol') {
                             solapes++;
                             nocturnos++;
@@ -587,6 +681,7 @@
                                 }
                             }
                         } 
+                        // Lógica para horas
                         else if (tipoBase === 'ref-vol-horas' || tipoBase === 'eventos') {
                             if (tipoBase === 'ref-vol-horas') {
                                 solapes++;
@@ -731,7 +826,8 @@
                     spanNum.classList.add('day-number');
                     spanNum.textContent = i;
 
-                    const currentDayOfWeek = new Date(currentYear, currentMonth, i).getDay();
+                    const cellDate = new Date(currentYear, currentMonth, i);
+                    const currentDayOfWeek = cellDate.getDay();
                     const esFestivo = festivos.some(festivo => festivo.mes === currentMonth && festivo.dia === i) 
                                       || currentDayOfWeek === 0 
                                       || currentDayOfWeek === 6;
@@ -743,6 +839,8 @@
                     dateDiv.appendChild(spanNum);
                     
                     const dateKey = `${currentYear}-${currentMonth}-${i}`;
+                    
+                    // Capa 1: ¿Hay pintura manual (ej: Refuerzo, Eventos)?
                     if (paintedDays[dateKey]) {
                         const savedData = paintedDays[dateKey];
                         const tipoBase = savedData.split('|')[0];
@@ -760,6 +858,13 @@
                                 
                                 dateDiv.title = `De ${parts[1]} a ${parts[2]}`;
                             }
+                        }
+                    } 
+                    // Capa 2: Si no hay pintura manual, ¿Le toca guardia base del Perfil?
+                    else if (perfilTurnoAsignado && turnosMap[dateKey] === perfilTurnoAsignado) {
+                        // Solo pintamos si es igual o posterior a la Fecha de Ingreso
+                        if (perfilFechaIngreso && cellDate >= perfilFechaIngreso) {
+                            dateDiv.classList.add('guardia');
                         }
                     }
                     
