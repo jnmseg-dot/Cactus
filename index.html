@@ -220,6 +220,7 @@
             color: #000;
             cursor: pointer;
             transition: background-color 0.2s;
+            position: relative;
         }
         
         .date:nth-child(7n) {
@@ -254,12 +255,15 @@
             padding: 3px; 
         }
 
-        .date.has-hours .day-number {
+        .date.has-hours .day-number, .date.has-label .day-number {
             align-self: flex-start; 
             width: 18px; 
             height: 18px;
             font-size: 0.7em;
             line-height: 18px;
+            position: absolute;
+            top: 2px;
+            left: 2px;
         }
 
         .hours-display {
@@ -267,7 +271,15 @@
             line-height: 1.1;
             font-weight: bold;
             text-align: center;
-            margin-bottom: 2px;
+            margin-top: 14px;
+        }
+
+        .permiso-label {
+            font-size: 0.8em;
+            font-weight: bold;
+            text-align: center;
+            color: #000;
+            margin-top: 14px; /* Para dejar espacio al número en la esquina */
         }
 
         .legend {
@@ -276,11 +288,19 @@
             flex-direction: column;
             align-items: center;
             width: 100%;
+            gap: 10px;
+        }
+
+        .legend-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .legend select {
-            padding: 10px 15px;
-            font-size: 1em;
+            padding: 8px 12px;
+            font-size: 0.95em;
             border-radius: 8px;
             border: 2px solid #000;
             cursor: pointer;
@@ -288,7 +308,7 @@
             font-weight: bold;
             background-color: white;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            width: 280px;
+            width: 240px;
             text-align: center;
         }
 
@@ -297,7 +317,7 @@
         }
 
         .time-inputs {
-            margin-top: 15px;
+            margin-top: 5px;
             display: none;
             flex-direction: column;
             gap: 12px;
@@ -342,6 +362,7 @@
             border: 2px solid black;
             padding: 20px;
             width: 220px;
+            height: fit-content;
         }
 
         .stats-panel h3 {
@@ -367,13 +388,16 @@
             border-bottom: none;
         }
 
+        /* --- COLORES DE LOS TURNOS Y PERMISOS --- */
         .date.guardia { background-color: #ff4d4d !important; color: white; }
         .date.ref-ob { background-color: #ffa07a !important; color: black; }
         .date.ref-vol { background-color: #90ee90 !important; color: black; }
         .date.ref-vol-horas { background-color: #d4f5d4 !important; color: black; }
         .date.eventos { background-color: #add8e6 !important; color: black; }
-        .date.otros { background-color: #ffffe0 !important; color: black; }
         .date.superior { background-color: purple !important; color: white; }
+        
+        /* Color base para todos los permisos (un verde distinto y suave) */
+        .date.permiso { background-color: #b3e6b3 !important; color: black; }
     </style>
 </head>
 <body>
@@ -439,16 +463,28 @@
             </div>
 
             <div class="legend">
-                <select id="tipoGuardiaSelect">
-                    <option value="" disabled selected hidden>Selecciona para pintar:</option>
-                    <option value="ref-ob">🟠 Refuerzo obligatorio</option>
-                    <option value="ref-vol">🟢 Refuerzo voluntario</option>
-                    <option value="ref-vol-horas">🟢 Refuerzo voluntario (Horas)</option>
-                    <option value="eventos">🔵 Eventos (Horas)</option>
-                    <option value="otros">🟡 Otros</option>
-                    <option value="superior">🟣 Superior Categoría</option>
-                    <option value="borrar">⚪ Borrar</option>
-                </select>
+                <div class="legend-controls">
+                    <!-- Desplegable 1: Guardias extras -->
+                    <select id="tipoGuardiaSelect">
+                        <option value="" disabled selected hidden>Guardias extras:</option>
+                        <option value="ref-ob">🟠 Refuerzo obligatorio</option>
+                        <option value="ref-vol">🟢 Refuerzo voluntario</option>
+                        <option value="ref-vol-horas">🟢 Refuerzo voluntario (Horas)</option>
+                        <option value="eventos">🔵 Eventos (Horas)</option>
+                        <option value="superior">🟣 Superior Categoría</option>
+                        <option value="borrar">⚪ Borrar</option>
+                    </select>
+
+                    <!-- Desplegable 2: Permisos -->
+                    <select id="permisosSelect">
+                        <option value="" disabled selected hidden>Permisos:</option>
+                        <option value="vacaciones" id="optVac">🟢 Vacaciones (7)</option>
+                        <option value="moscosos" id="optMos">🟢 Moscosos (2)</option>
+                        <option value="compensatorio" id="optCon">🟢 Compensatorio (3)</option>
+                        <option value="vac-ant-horas">🟢 Vac. por antigüedad (Horas)</option>
+                        <option value="otros-horas">🟢 Otros (Horas)</option>
+                    </select>
+                </div>
 
                 <div id="timeInputs" class="time-inputs">
                     <div class="time-group">
@@ -480,7 +516,9 @@
             const datesContainer = document.getElementById('dates');
             const prevBtn = document.getElementById('prevBtn');
             const nextBtn = document.getElementById('nextBtn');
+            
             const tipoGuardiaSelect = document.getElementById('tipoGuardiaSelect');
+            const permisosSelect = document.getElementById('permisosSelect');
             
             const timeInputs = document.getElementById('timeInputs');
             const horaInicio = document.getElementById('horaInicio');
@@ -497,6 +535,7 @@
             let perfilTurnoAsignado = null;
             let perfilFechaIngreso = null;
 
+            // --- GENERADOR DE TURNOS AUTOMÁTICOS ---
             const turnosMap = {};
             function initTurnos() {
                 let foundMatch = false;
@@ -505,7 +544,6 @@
                     let testTurnos = {};
                     let flags = {};
                     
-                    // Aseguramos hora 12:00 al calcular para evitar cualquier error de zona horaria o salto
                     let d = new Date(2024, 0, 1, 12, 0, 0);
                     let endD = new Date(2035, 11, 31, 12, 0, 0);
 
@@ -553,15 +591,11 @@
             }
             initTurnos();
 
-            profileBtn.addEventListener('click', () => {
-                profileModalOverlay.classList.add('active');
-            });
-
+            // --- LÓGICA DEL PERFIL ---
+            profileBtn.addEventListener('click', () => profileModalOverlay.classList.add('active'));
             closeProfileBtn.addEventListener('click', () => {
                 const turnoVal = document.getElementById('perfilTurno').value;
-                if (turnoVal) {
-                    perfilTurnoAsignado = parseInt(turnoVal);
-                }
+                if (turnoVal) perfilTurnoAsignado = parseInt(turnoVal);
                 
                 const fechaStr = document.getElementById('perfilFechaIngreso').value;
                 if (fechaStr) {
@@ -574,11 +608,8 @@
                 profileModalOverlay.classList.remove('active');
                 renderCalendar(); 
             });
-
             profileModalOverlay.addEventListener('click', (e) => {
-                if (e.target === profileModalOverlay) {
-                    profileModalOverlay.classList.remove('active');
-                }
+                if (e.target === profileModalOverlay) profileModalOverlay.classList.remove('active');
             });
 
             let currentDate = new Date();
@@ -611,12 +642,41 @@
                 if (!timeStr) return 0;
                 const [h, m] = timeStr.split(':').map(Number);
                 let mins = h * 60 + m;
-                if (isEndTime) {
-                    if (mins <= 540) mins += 1440;
-                } else {
-                    if (mins < 540) mins += 1440;
-                }
+                if (isEndTime && mins <= 540) mins += 1440;
+                else if (!isEndTime && mins < 540) mins += 1440;
                 return mins;
+            }
+
+            // --- CONTROL DE LIMITES DE PERMISOS ---
+            let remVac = 7, remMos = 2, remCon = 3;
+
+            function updatePermissionLimits() {
+                let usedVac = 0, usedMos = 0, usedCon = 0;
+
+                // Contar los permisos usados en el año actual (currentYear)
+                for (const key in paintedDays) {
+                    if (key.startsWith(`${currentYear}-`)) {
+                        const tipoBase = paintedDays[key].split('|')[0];
+                        if (tipoBase === 'vacaciones') usedVac++;
+                        if (tipoBase === 'moscosos') usedMos++;
+                        if (tipoBase === 'compensatorio') usedCon++;
+                    }
+                }
+
+                remVac = Math.max(0, 7 - usedVac);
+                remMos = Math.max(0, 2 - usedMos);
+                remCon = Math.max(0, 3 - usedCon);
+
+                document.getElementById('optVac').textContent = `🟢 Vacaciones (${remVac})`;
+                document.getElementById('optMos').textContent = `🟢 Moscosos (${remMos})`;
+                document.getElementById('optCon').textContent = `🟢 Compensatorio (${remCon})`;
+            }
+
+            function checkPermissionLimit(tipo) {
+                if (tipo === 'vacaciones' && remVac <= 0) return false;
+                if (tipo === 'moscosos' && remMos <= 0) return false;
+                if (tipo === 'compensatorio' && remCon <= 0) return false;
+                return true;
             }
 
             function updateStats() {
@@ -655,51 +715,33 @@
                             nocturnos++;
 
                             if (todayIsFestivo) {
-                                if (dayOfWeek === 6) {
-                                    festivosGuardia += 1.5;
-                                } else {
-                                    if (tomorrowIsFestivo) {
-                                        festivosGuardia += 2;
-                                    } else {
-                                        festivosGuardia += 1;
-                                    }
-                                }
+                                if (dayOfWeek === 6) festivosGuardia += 1.5;
+                                else if (tomorrowIsFestivo) festivosGuardia += 2;
+                                else festivosGuardia += 1;
                             } else {
-                                if (tomorrowIsFestivo) {
-                                    festivosGuardia += 0.5;
-                                }
+                                if (tomorrowIsFestivo) festivosGuardia += 0.5;
                             }
                         } 
                         else if (tipoBase === 'ref-vol-horas' || tipoBase === 'eventos') {
-                            if (tipoBase === 'ref-vol-horas') {
-                                solapes++;
-                            }
+                            if (tipoBase === 'ref-vol-horas') solapes++;
                             
                             const hInicio = savedData[1] || "00:00";
                             const hFin = savedData[2] || "00:00";
                             
                             const minI = timeToShiftMinutes(hInicio, false);
                             let minF = timeToShiftMinutes(hFin, true);
-                            if (minF <= minI) {
-                                minF += 1440;
-                            }
+                            if (minF <= minI) minF += 1440;
 
-                            if (minF > 1620) {
-                                nocturnos += 1;
-                            } else if (minF > 1320) {
-                                nocturnos += 0.5;
-                            }
+                            if (minF > 1620) nocturnos += 1;
+                            else if (minF > 1320) nocturnos += 0.5;
 
                             const startTramo1 = Math.max(minI, 540);
                             const endTramo1 = Math.min(minF, 1440);
                             const duracionTramo1 = Math.max(0, endTramo1 - startTramo1);
 
                             if (duracionTramo1 > 0 && todayIsFestivo) {
-                                if (duracionTramo1 <= 300) {
-                                    festivosGuardia += 0.5;
-                                } else {
-                                    festivosGuardia += 1;
-                                }
+                                if (duracionTramo1 <= 300) festivosGuardia += 0.5;
+                                else festivosGuardia += 1;
                             }
 
                             const startTramo2 = Math.max(minI, 1440);
@@ -707,11 +749,8 @@
                             const duracionTramo2 = Math.max(0, endTramo2 - startTramo2);
 
                             if (duracionTramo2 > 0 && tomorrowIsFestivo) {
-                                if (duracionTramo2 <= 300) {
-                                    festivosGuardia += 0.5;
-                                } else {
-                                    festivosGuardia += 1;
-                                }
+                                if (duracionTramo2 <= 300) festivosGuardia += 0.5;
+                                else festivosGuardia += 1;
                             }
                         }
                     }
@@ -722,14 +761,25 @@
                 valFestivos.textContent = festivosGuardia;
             }
 
-            tipoGuardiaSelect.addEventListener('change', (e) => {
-                if (e.target.value === 'ref-vol-horas' || e.target.value === 'eventos') {
+            // --- GESTIÓN DE LOS MENÚS DESPLEGABLES ---
+            function checkTimeInputs(val) {
+                if (val && val.includes('horas')) {
                     timeInputs.style.display = 'flex';
-                    currentColor = e.target.value;
                 } else {
                     timeInputs.style.display = 'none';
-                    currentColor = e.target.value === "" ? null : e.target.value;
                 }
+            }
+
+            tipoGuardiaSelect.addEventListener('change', (e) => {
+                permisosSelect.value = ""; // Desmarca el otro
+                currentColor = e.target.value;
+                checkTimeInputs(currentColor);
+            });
+
+            permisosSelect.addEventListener('change', (e) => {
+                tipoGuardiaSelect.value = ""; // Desmarca el otro
+                currentColor = e.target.value;
+                checkTimeInputs(currentColor);
             });
 
             datesContainer.addEventListener('click', (e) => {
@@ -743,22 +793,30 @@
                     
                     if (currentColor === 'borrar') {
                         delete paintedDays[dateKey];
-                    } else if (currentColor === 'ref-vol-horas' || currentColor === 'eventos') {
-                        if (!horaInicio.value || !horaFin.value) {
-                            alert("Por favor, introduce la hora de inicio y de fin en las casillas.");
+                    } else {
+                        // Verificamos si es un permiso con límite y si quedan
+                        if (!checkPermissionLimit(currentColor)) {
+                            alert("Ya no te quedan más de esos permisos.");
                             return;
                         }
-                        
-                        paintedDays[dateKey] = `${currentColor}|${horaInicio.value}|${horaFin.value}`;
-                        
-                        horaInicio.value = '';
-                        horaFin.value = '';
-                        tipoGuardiaSelect.value = '';
-                        timeInputs.style.display = 'none';
-                        currentColor = null;
 
-                    } else {
-                        paintedDays[dateKey] = currentColor;
+                        if (currentColor.includes('horas')) {
+                            if (!horaInicio.value || !horaFin.value) {
+                                alert("Por favor, introduce la hora de inicio y de fin en las casillas.");
+                                return;
+                            }
+                            paintedDays[dateKey] = `${currentColor}|${horaInicio.value}|${horaFin.value}`;
+                            
+                            // Auto reset para horas
+                            horaInicio.value = '';
+                            horaFin.value = '';
+                            tipoGuardiaSelect.value = '';
+                            permisosSelect.value = '';
+                            timeInputs.style.display = 'none';
+                            currentColor = null;
+                        } else {
+                            paintedDays[dateKey] = currentColor;
+                        }
                     }
                     
                     renderCalendar();
@@ -779,6 +837,17 @@
                     currentYear = parseInt(yearSelect.value);
                     renderCalendar();
                 });
+            }
+
+            function getPermisoLabel(tipoBase) {
+                switch(tipoBase) {
+                    case 'vacaciones': return 'Vac';
+                    case 'moscosos': return 'Mos';
+                    case 'compensatorio': return 'Con';
+                    case 'vac-ant-horas': return 'Vac Ant';
+                    case 'otros-horas': return 'Otr';
+                    default: return '';
+                }
             }
 
             function createDayCell(y, m, d, isInactive) {
@@ -808,19 +877,38 @@
                 if (paintedDays[dateKey]) {
                     const savedData = paintedDays[dateKey];
                     const tipoBase = savedData.split('|')[0];
-                    dateDiv.classList.add(tipoBase);
+                    
+                    // Si es uno de los permisos nuevos, le damos estilo general y creamos la etiqueta
+                    if (['vacaciones', 'moscosos', 'compensatorio', 'vac-ant-horas', 'otros-horas'].includes(tipoBase)) {
+                        dateDiv.classList.add('permiso');
+                        dateDiv.classList.add('has-label');
 
-                    if (tipoBase === 'ref-vol-horas' || tipoBase === 'eventos') {
-                        const parts = savedData.split('|');
-                        if (parts.length === 3) {
-                            dateDiv.classList.add('has-hours');
-                            
-                            const hoursDiv = document.createElement('div');
-                            hoursDiv.classList.add('hours-display');
-                            hoursDiv.innerHTML = `${parts[1]}<br>${parts[2]}`;
-                            dateDiv.appendChild(hoursDiv);
-                            
-                            dateDiv.title = `De ${parts[1]} a ${parts[2]}`;
+                        const labelDiv = document.createElement('div');
+                        labelDiv.classList.add('permiso-label');
+                        labelDiv.textContent = getPermisoLabel(tipoBase);
+                        dateDiv.appendChild(labelDiv);
+
+                        if (tipoBase.includes('horas')) {
+                            const parts = savedData.split('|');
+                            if (parts.length === 3) {
+                                // Reemplazamos la etiqueta por texto + horas
+                                labelDiv.innerHTML = `${getPermisoLabel(tipoBase)}<br><span style="font-size:0.85em">${parts[1]}-${parts[2]}</span>`;
+                                dateDiv.title = `De ${parts[1]} a ${parts[2]}`;
+                            }
+                        }
+                    } else {
+                        // Pinturas antiguas o Guardias extras
+                        dateDiv.classList.add(tipoBase);
+                        if (tipoBase === 'ref-vol-horas' || tipoBase === 'eventos') {
+                            const parts = savedData.split('|');
+                            if (parts.length === 3) {
+                                dateDiv.classList.add('has-hours');
+                                const hoursDiv = document.createElement('div');
+                                hoursDiv.classList.add('hours-display');
+                                hoursDiv.innerHTML = `${parts[1]}<br>${parts[2]}`;
+                                dateDiv.appendChild(hoursDiv);
+                                dateDiv.title = `De ${parts[1]} a ${parts[2]}`;
+                            }
                         }
                     }
                 } 
@@ -834,6 +922,8 @@
             }
 
             function renderCalendar() {
+                updatePermissionLimits(); // Actualiza contadores antes de pintar
+
                 monthSpan.textContent = monthNames[currentMonth];
                 yearSelect.value = currentYear; 
                 datesContainer.innerHTML = ''; 
