@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calendario Cactus</title>
     <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    
+    <!-- DETECTOR DE ERRORES: Si algo falla, lo mostrará en pantalla en vez de dejarla en blanco -->
+    <script>
+        window.onerror = function(msg, url, lineNo, columnNo, error) {
+            document.body.innerHTML = '<div style="background-color:#ffe6e6; color:#cc0000; padding: 20px; border: 2px solid #cc0000; border-radius: 8px; font-family: sans-serif;"><h1>🚨 ERROR EN EL CÓDIGO</h1><p><b>Mensaje:</b> ' + msg + '</p><p><b>Línea:</b> ' + lineNo + '</p><p>Por favor, copia este texto rojo y pásaselo a la IA.</p></div>';
+            return false;
+        };
+    </script>
+
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -206,7 +215,7 @@
         .dates {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            grid-auto-rows: 60px; /* Tamaño de celda estricto para evitar descuadres */
+            grid-auto-rows: 60px; 
             border-left: 2px solid black;
         }
 
@@ -391,6 +400,186 @@
             border-bottom: none;
         }
 
-        /* --- COLORES DE LOS TURNOS Y PERMISOS --- */
+        /* --- COLORES --- */
         .date.guardia { background-color: #ff4d4d !important; color: white; }
-        .date.ref-ob { background-color: #ff7f50 !important; color
+        .date.ref-ob { background-color: #ff7f50 !important; color: black; } 
+        .date.ref-vol { background-color: #ffa500 !important; color: black; } 
+        .date.ref-vol-horas { background-color: #ffc04d !important; color: black; } 
+        .date.eventos { background-color: #add8e6 !important; color: black; }
+        .date.superior { background-color: purple !important; color: white; }
+        .date.permiso { background-color: #b3e6b3 !important; color: black; }
+    </style>
+</head>
+<body>
+
+    <button id="profileBtn" class="profile-btn">Perfil</button>
+
+    <div id="profileModalOverlay" class="modal-overlay">
+        <div class="profile-modal">
+            <h3>Perfil</h3>
+            
+            <div class="profile-group">
+                <label for="perfilTurno">Turno:</label>
+                <select id="perfilTurno">
+                    <option value="" disabled selected hidden>Selecciona tu turno</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
+
+            <div class="profile-group">
+                <label for="perfilCategoria">Categoría:</label>
+                <select id="perfilCategoria">
+                    <option value="bombero">Bombero</option>
+                    <option value="jefe-dotacion">Jefe de dotación ▲▲</option>
+                    <option value="jefe-turno">Jefe de Turno ▲▲▲</option>
+                </select>
+            </div>
+
+            <div class="profile-group">
+                <label for="perfilFechaIngreso">Fecha de ingreso:</label>
+                <input type="date" id="perfilFechaIngreso">
+            </div>
+
+            <button id="closeProfileBtn" class="close-modal-btn">Guardar y cerrar</button>
+        </div>
+    </div>
+
+    <div class="main-container">
+        
+        <div class="calendar-section">
+            <div class="calendar">
+                <div class="header">
+                    <button id="prevBtn">&lt;</button>
+                    <div class="month-year">
+                        <span id="month"></span>
+                        <select id="yearSelect"></select>
+                    </div>
+                    <button id="nextBtn">&gt;</button>
+                </div>
+                <div class="days">
+                    <div>LUN</div>
+                    <div>MAR</div>
+                    <div>MIÉ</div>
+                    <div>JUE</div>
+                    <div>VIE</div>
+                    <div>SÁB</div>
+                    <div>DOM</div>
+                </div>
+                <div class="dates" id="dates"></div>
+            </div>
+
+            <div class="legend">
+                <div class="legend-controls">
+                    <select id="tipoGuardiaSelect">
+                        <option value="" disabled selected hidden>Guardias extras:</option>
+                        <option value="ref-ob">🟠 Refuerzo obligatorio</option>
+                        <option value="ref-vol">🟠 Refuerzo voluntario</option>
+                        <option value="ref-vol-horas">🟠 Refuerzo voluntario (Horas)</option>
+                        <option value="eventos">🔵 Eventos (Horas)</option>
+                        <option value="superior">🟣 Superior Categoría</option>
+                        <option value="borrar">⚪ Borrar</option>
+                    </select>
+
+                    <select id="permisosSelect">
+                        <option value="" disabled selected hidden>Permisos:</option>
+                        <option value="vacaciones" id="optVac">🟢 Vacaciones (7)</option>
+                        <option value="moscosos" id="optMos">🟢 Moscosos (2)</option>
+                        <option value="compensatorio" id="optCon">🟢 Compensatorio (3)</option>
+                        <option value="vac-ant-horas">🟢 Vac. por antigüedad (Horas)</option>
+                        <option value="otros-horas">🟢 Otros (Horas)</option>
+                        <option value="borrar">⚪ Borrar</option>
+                    </select>
+                </div>
+
+                <div id="timeInputs" class="time-inputs">
+                    <div class="time-group">
+                        <label for="horaInicio">Hora inicio:</label>
+                        <input type="time" id="horaInicio" required>
+                    </div>
+                    <div class="time-group">
+                        <label for="horaFin">Hora fin:</label>
+                        <input type="time" id="horaFin" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-panel">
+            <h3>Cómputo Mensual</h3>
+            <p>Solapes: <span id="countSolapes">0</span></p>
+            <p>Nocturnos: <span id="countNocturnos">0</span></p>
+            <p>Festivos: <span id="countFestivos">0</span></p>
+        </div>
+
+    </div>
+
+    <!-- SCRIPT PRINCIPAL -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+            const yearSelect = document.getElementById('yearSelect');
+            const monthSpan = document.getElementById('month');
+            const datesContainer = document.getElementById('dates');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            
+            const tipoGuardiaSelect = document.getElementById('tipoGuardiaSelect');
+            const permisosSelect = document.getElementById('permisosSelect');
+            
+            const timeInputs = document.getElementById('timeInputs');
+            const horaInicio = document.getElementById('horaInicio');
+            const horaFin = document.getElementById('horaFin');
+
+            const valSolapes = document.getElementById('countSolapes');
+            const valNocturnos = document.getElementById('countNocturnos');
+            const valFestivos = document.getElementById('countFestivos');
+
+            const profileBtn = document.getElementById('profileBtn');
+            const profileModalOverlay = document.getElementById('profileModalOverlay');
+            const closeProfileBtn = document.getElementById('closeProfileBtn');
+
+            let perfilTurnoAsignado = null;
+            let perfilFechaIngreso = null;
+
+            const turnosMap = {};
+            function initTurnos() {
+                let foundMatch = false;
+                for(let start = 1; start <= 5; start++) {
+                    let currentShift = start;
+                    let testTurnos = {};
+                    let flags = {};
+                    
+                    let d = new Date(2024, 0, 1, 12, 0, 0);
+                    let endD = new Date(2035, 11, 31, 12, 0, 0);
+
+                    while (d <= endD) {
+                        let y = d.getFullYear();
+                        let m = d.getMonth();
+                        let date = d.getDate();
+
+                        let correturnosAfectado = 0;
+                        if (y === 2025) correturnosAfectado = 5;
+                        else if (y === 2026) correturnosAfectado = 1;
+                        else if (y === 2027) correturnosAfectado = 2;
+                        else if (y === 2029) correturnosAfectado = 3;
+                        else if (y === 2030) correturnosAfectado = 4;
+                        else if (y === 2031) correturnosAfectado = 5;
+                        else if (y === 2033) correturnosAfectado = 1;
+                        else if (y === 2034) correturnosAfectado = 2;
+                        else if (y === 2035) correturnosAfectado = 3;
+
+                        if (m === 2 && correturnosAfectado > 0 && currentShift === correturnosAfectado) {
+                            let keyFlag = `corr_${y}`;
+                            if (!flags[keyFlag]) {
+                                flags[keyFlag] = true;
+                                currentShift = (currentShift % 5) + 1; 
+                            }
+                        }
+
+                        testTurnos[`${y}-${m}-${date}`] = currentShift;
+
+                        if (y === 2026 && m === 9 && date === 14) {
