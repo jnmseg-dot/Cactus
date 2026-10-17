@@ -206,7 +206,7 @@
         .dates {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            grid-auto-rows: 60px; /* Fijado a 60px para evitar deformaciones */
+            grid-auto-rows: 60px; /* Tamaño de celda estricto para evitar descuadres */
             border-left: 2px solid black;
         }
 
@@ -221,7 +221,7 @@
             cursor: pointer;
             transition: background-color 0.2s;
             position: relative;
-            overflow: hidden; /* Evita que el texto rompa el cuadrado */
+            overflow: hidden;
             min-width: 0;
         }
         
@@ -252,4 +252,145 @@
 
         .date.has-hours {
             flex-direction: column;
-            justify-
+            justify-content: space-between;
+            align-items: center;
+            padding: 2px; 
+        }
+
+        .date.has-hours .day-number, .date.has-label .day-number {
+            align-self: flex-start; 
+            width: 18px; 
+            height: 18px;
+            font-size: 0.7em;
+            line-height: 18px;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+        }
+
+        .hours-display {
+            font-size: 0.7em;
+            line-height: 1.1;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        .permiso-label {
+            font-size: 0.75em;
+            font-weight: bold;
+            text-align: center;
+            color: #000;
+            margin-top: 12px;
+            line-height: 1.1;
+        }
+
+        .legend {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 10px;
+        }
+
+        .legend-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .legend select {
+            padding: 8px 12px;
+            font-size: 0.95em;
+            border-radius: 8px;
+            border: 2px solid #000;
+            cursor: pointer;
+            outline: none;
+            font-weight: bold;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 240px;
+            text-align: center;
+        }
+
+        .legend select:hover {
+            border-color: #555;
+        }
+
+        .time-inputs {
+            margin-top: 5px;
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+            background-color: white;
+            padding: 15px;
+            border: 2px solid black;
+            border-radius: 8px;
+            width: 280px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .time-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .time-group label {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .time-group input {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 5px;
+            font-family: inherit;
+            font-size: 1em;
+            outline: none;
+        }
+        
+        .time-group input:focus {
+            border-color: #000;
+        }
+
+        .stats-panel {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: 2px solid black;
+            padding: 20px;
+            width: 220px;
+            height: fit-content;
+        }
+
+        .stats-panel h3 {
+            margin-top: 0;
+            border-bottom: 2px solid black;
+            padding-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+            font-size: 1.1em;
+        }
+
+        .stats-panel p {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin: 15px 0;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 5px;
+        }
+
+        .stats-panel p:last-child {
+            border-bottom: none;
+        }
+
+        /* --- COLORES DE LOS TURNOS Y PERMISOS --- */
+        .date.guardia { background-color: #ff4d4d !important; color: white; }
+        .date.ref-ob { background-color: #ff7f50 !important; color
