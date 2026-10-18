@@ -315,7 +315,7 @@
 
         .input-group-container {
             margin-top: 5px;
-            display: none; /* Se activa por JS */
+            display: none; 
             flex-direction: column;
             gap: 12px;
             background-color: white;
@@ -393,15 +393,16 @@
             text-align: center;
         }
 
-        /* --- COLORES AJUSTADOS PARA COINCIDIR CON EMOJIS --- */
+        /* --- COLORES --- */
         .date.guardia { background-color: #ff4d4d !important; color: white; }
-        .date.ref-ob { background-color: #ff6347 !important; color: white; } /* Rojo Coral (🔴) */
-        .date.ref-vol { background-color: #ffa500 !important; color: black; } /* Naranja sólido (🟠) */
-        .date.ref-vol-horas { background-color: #ffcc80 !important; color: black; } /* Naranja suave (🟠) */
-        .date.eventos { background-color: #add8e6 !important; color: black; } /* Azul claro (🔵) */
-        .date.cambio-guardia { background-color: #d2b48c !important; color: black; } /* Marrón claro (🟤) */
-        .date.superior { background-color: #9370db !important; color: white; } /* Púrpura (🟣) */
-        .date.permiso { background-color: #90ee90 !important; color: black; } /* Verde (🟢) */
+        .date.ref-ob { background-color: #ff6347 !important; color: white; } 
+        .date.ref-vol { background-color: #ffa500 !important; color: black; } 
+        .date.ref-vol-horas { background-color: #ffcc80 !important; color: black; } 
+        .date.eventos { background-color: #add8e6 !important; color: black; } 
+        .date.cambio-guardia { background-color: #d2b48c !important; color: black; } 
+        .date.devolucion-guardia { background-color: #d2b48c !important; color: black; } /* Mismo color que Cambio de Guardia */
+        .date.superior { background-color: #9370db !important; color: white; } 
+        .date.permiso { background-color: #90ee90 !important; color: black; } 
     </style>
 </head>
 <body>
@@ -484,6 +485,7 @@
                         <option value="vacaciones" id="optVac">🟢 Vacaciones (7)</option>
                         <option value="moscosos" id="optMos">🟢 Moscosos (2)</option>
                         <option value="compensatorio" id="optCon">🟢 Compensatorio (3)</option>
+                        <option value="devolucion-guardia">🟤 Devolución de Guardia</option>
                         <option value="vac-ant-horas">🟢 Vac. por antigüedad (Horas)</option>
                         <option value="otros-horas">🟢 Otros (Horas)</option>
                         <option value="borrar">⚪ Borrar</option>
@@ -502,10 +504,10 @@
                     </div>
                 </div>
 
-                <!-- Recuadro para nombre (Cambio de guardia) -->
+                <!-- Recuadro para nombre (Cambio de guardia / Devolución de guardia) -->
                 <div id="nameInputGroup" class="input-group-container">
                     <div class="input-group">
-                        <label for="guardiaNombre">Le haces la guardia a:</label>
+                        <label id="labelGuardiaNombre" for="guardiaNombre">Le haces la guardia a:</label>
                         <input type="text" id="guardiaNombre" placeholder="Nombre..." style="width: 110px;">
                     </div>
                 </div>
@@ -522,7 +524,7 @@
     </div>
 
     <!-- Etiqueta de seguridad de versión -->
-    <div class="version-text">Versión 3.3 - Cactus</div>
+    <div class="version-text">Versión 3.4 - Cactus</div>
 
     <!-- SCRIPT PRINCIPAL -->
     <script>
@@ -543,6 +545,7 @@
                 const horaFin = document.getElementById('horaFin');
 
                 const nameInputGroup = document.getElementById('nameInputGroup');
+                const labelGuardiaNombre = document.getElementById('labelGuardiaNombre');
                 const guardiaNombre = document.getElementById('guardiaNombre');
 
                 const valSolapes = document.getElementById('countSolapes');
@@ -726,7 +729,6 @@
                             const tomorrowIsFestivo = isFestivo(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
                             const dayOfWeek = cellDate.getDay();
 
-                            // Computa Cambio de Guardia igual que una normal 24h
                             if (tipoBase === 'guardia' || tipoBase === 'ref-ob' || tipoBase === 'ref-vol' || tipoBase === 'cambio-guardia') {
                                 solapes++;
                                 nocturnos++;
@@ -784,245 +786,4 @@
                     if (val && val.includes('horas')) {
                         timeInputs.style.display = 'flex';
                     } else if (val === 'cambio-guardia') {
-                        nameInputGroup.style.display = 'flex';
-                    }
-                }
-
-                tipoGuardiaSelect.addEventListener('change', (e) => {
-                    permisosSelect.value = ""; 
-                    currentColor = e.target.value;
-                    checkInputsLogic(currentColor);
-                });
-
-                permisosSelect.addEventListener('change', (e) => {
-                    tipoGuardiaSelect.value = ""; 
-                    currentColor = e.target.value;
-                    checkInputsLogic(currentColor);
-                });
-
-                datesContainer.addEventListener('click', (e) => {
-                    const targetDate = e.target.closest('.date'); 
-                    
-                    if (targetDate && !targetDate.classList.contains('inactive')) {
-                        if (!currentColor) return; 
-                        
-                        const dateKey = targetDate.dataset.date;
-                        if (!dateKey) return;
-                        
-                        if (currentColor === 'borrar') {
-                            delete paintedDays[dateKey];
-                        } else {
-                            if (!checkPermissionLimit(currentColor)) {
-                                alert("Ya no te quedan más de esos permisos.");
-                                return;
-                            }
-
-                            if (currentColor.includes('horas')) {
-                                if (!horaInicio.value || !horaFin.value) {
-                                    alert("Por favor, introduce la hora de inicio y de fin en las casillas.");
-                                    return;
-                                }
-                                paintedDays[dateKey] = `${currentColor}|${horaInicio.value}|${horaFin.value}`;
-                                
-                                horaInicio.value = '';
-                                horaFin.value = '';
-                                tipoGuardiaSelect.value = '';
-                                permisosSelect.value = '';
-                                checkInputsLogic(null);
-                                currentColor = null;
-                            } else if (currentColor === 'cambio-guardia') {
-                                const nom = guardiaNombre.value.trim();
-                                if (!nom) {
-                                    alert("Por favor, escribe a quién le haces el cambio de guardia.");
-                                    return;
-                                }
-                                paintedDays[dateKey] = `${currentColor}|${nom}`;
-                                
-                                guardiaNombre.value = '';
-                                tipoGuardiaSelect.value = '';
-                                checkInputsLogic(null);
-                                currentColor = null;
-                            } else {
-                                paintedDays[dateKey] = currentColor;
-                            }
-                        }
-                        
-                        renderCalendar();
-                    }
-                });
-
-                function initYearSelect() {
-                    yearSelect.innerHTML = '';
-                    for (let y = 2024; y <= 2035; y++) {
-                        let option = document.createElement('option');
-                        option.value = y;
-                        option.text = y;
-                        yearSelect.appendChild(option);
-                    }
-                    yearSelect.value = currentYear;
-                    
-                    yearSelect.addEventListener('change', () => {
-                        currentYear = parseInt(yearSelect.value);
-                        renderCalendar();
-                    });
-                }
-
-                // Generador de etiquetas interiores
-                function getCustomLabel(tipoBase) {
-                    switch(tipoBase) {
-                        case 'ref-ob': return 'Obl';
-                        case 'ref-vol': return 'Vol';
-                        case 'ref-vol-horas': return 'Vol';
-                        case 'eventos': return 'Evet';
-                        case 'cambio-guardia': return 'Camb';
-                        case 'vacaciones': return 'Vac';
-                        case 'moscosos': return 'Mos';
-                        case 'compensatorio': return 'Con';
-                        case 'vac-ant-horas': return 'Vac Ant';
-                        case 'otros-horas': return 'Otr';
-                        default: return '';
-                    }
-                }
-
-                function createDayCell(y, m, d, isInactive) {
-                    const dateDiv = document.createElement('div');
-                    dateDiv.classList.add('date');
-                    if (isInactive) dateDiv.classList.add('inactive');
-                    
-                    const dateKey = `${y}-${m}-${d}`;
-                    dateDiv.dataset.date = dateKey;
-                    
-                    const spanNum = document.createElement('span');
-                    spanNum.classList.add('day-number');
-                    spanNum.textContent = d;
-
-                    const cellDate = new Date(y, m, d);
-                    const currentDayOfWeek = cellDate.getDay();
-                    const esFestivo = festivos.some(festivo => festivo.mes === m && festivo.dia === d) 
-                                      || currentDayOfWeek === 0 
-                                      || currentDayOfWeek === 6;
-
-                    if (esFestivo) {
-                        spanNum.classList.add('festivo');
-                    }
-
-                    dateDiv.appendChild(spanNum);
-                    
-                    if (paintedDays[dateKey]) {
-                        const savedData = paintedDays[dateKey];
-                        const tipoBase = savedData.split('|')[0];
-                        
-                        // Añadimos el color de fondo
-                        if (['vacaciones', 'moscosos', 'compensatorio', 'vac-ant-horas', 'otros-horas'].includes(tipoBase)) {
-                            dateDiv.classList.add('permiso');
-                        } else {
-                            dateDiv.classList.add(tipoBase);
-                        }
-
-                        // Generador de texto interior
-                        const labelText = getCustomLabel(tipoBase);
-                        if (labelText) {
-                            dateDiv.classList.add('has-label'); 
-                            
-                            const labelDiv = document.createElement('div');
-                            labelDiv.classList.add('custom-label');
-
-                            if (tipoBase.includes('horas')) {
-                                const parts = savedData.split('|');
-                                if (parts.length === 3) {
-                                    labelDiv.innerHTML = `${labelText}<br><span style="font-size:0.85em;">${parts[1]}<br>${parts[2]}</span>`;
-                                    dateDiv.title = `De ${parts[1]} a ${parts[2]}`;
-                                }
-                            } else if (tipoBase === 'cambio-guardia') {
-                                const parts = savedData.split('|');
-                                const nombreGuardia = parts[1] || "";
-                                labelDiv.innerHTML = `${labelText}<br><span style="font-size:0.85em;">${nombreGuardia}</span>`;
-                                dateDiv.title = `Cambio por: ${nombreGuardia}`;
-                            } else {
-                                labelDiv.textContent = labelText;
-                            }
-                            dateDiv.appendChild(labelDiv);
-                        }
-                    } 
-                    else if (perfilTurnoAsignado && turnosMap[dateKey] === perfilTurnoAsignado) {
-                        if (perfilFechaIngreso && cellDate >= perfilFechaIngreso) {
-                            dateDiv.classList.add('guardia');
-                        }
-                    }
-                    
-                    return dateDiv;
-                }
-
-                function renderCalendar() {
-                    updatePermissionLimits(); 
-
-                    monthSpan.textContent = monthNames[currentMonth];
-                    yearSelect.value = currentYear; 
-                    datesContainer.innerHTML = ''; 
-
-                    const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
-                    let startDay = firstDayIndex === 0 ? 6 : firstDayIndex - 1; 
-
-                    const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
-                    const prevLastDate = new Date(currentYear, currentMonth, 0).getDate();
-                    const lastDayIndex = new Date(currentYear, currentMonth, lastDate).getDay();
-                    let endDays = lastDayIndex === 0 ? 0 : 7 - lastDayIndex;
-
-                    let pMonth = currentMonth - 1;
-                    let pYear = currentYear;
-                    if (pMonth < 0) {
-                        pMonth = 11;
-                        pYear--;
-                    }
-                    for (let i = startDay; i > 0; i--) {
-                        const d = prevLastDate - i + 1;
-                        datesContainer.appendChild(createDayCell(pYear, pMonth, d, true));
-                    }
-
-                    for (let i = 1; i <= lastDate; i++) {
-                        datesContainer.appendChild(createDayCell(currentYear, currentMonth, i, false));
-                    }
-
-                    let nMonth = currentMonth + 1;
-                    let nYear = currentYear;
-                    if (nMonth > 11) {
-                        nMonth = 0;
-                        nYear++;
-                    }
-                    for (let i = 1; i <= endDays; i++) {
-                        datesContainer.appendChild(createDayCell(nYear, nMonth, i, true));
-                    }
-
-                    updateStats();
-                }
-
-                prevBtn.addEventListener('click', () => {
-                    currentMonth--;
-                    if (currentMonth < 0) {
-                        currentMonth = 11;
-                        currentYear--;
-                        if(currentYear < 2024) currentYear = 2024;
-                    }
-                    renderCalendar();
-                });
-
-                nextBtn.addEventListener('click', () => {
-                    currentMonth++;
-                    if (currentMonth > 11) {
-                        currentMonth = 0;
-                        currentYear++;
-                        if(currentYear > 2035) currentYear = 2035;
-                    }
-                    renderCalendar();
-                });
-
-                initYearSelect();
-                renderCalendar();
-                
-            } catch (err) {
-                document.body.innerHTML = '<div style="padding: 20px; font-family: sans-serif; text-align: center;"><div style="background-color: #ffe6e6; color: #cc0000; border: 3px solid #cc0000; border-radius: 10px; padding: 30px; display: inline-block;"><h2>🚨 ERROR FATAL 🚨</h2><p><b>' + err.message + '</b></p></div></div>';
-            }
-        })();
-    </script>
-</body>
-</html>
+                        labelGuardiaNombre
