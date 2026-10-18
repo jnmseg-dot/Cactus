@@ -207,7 +207,7 @@
         .dates {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            grid-auto-rows: 60px; /* Tamaño estricto */
+            grid-auto-rows: 60px;
             border-left: 2px solid black;
         }
 
@@ -251,7 +251,6 @@
             font-weight: bold;
         }
 
-        /* Clase unificada para cualquier celda que tenga texto/etiqueta */
         .date.has-label {
             flex-direction: column;
             justify-content: flex-start;
@@ -395,14 +394,14 @@
 
         /* --- COLORES --- */
         .date.guardia { background-color: #ff4d4d !important; color: white; }
-        .date.ref-ob { background-color: #ff6347 !important; color: white; } /* Rojo Coral */
-        .date.ref-vol { background-color: #ffa500 !important; color: black; } /* Naranja */
-        .date.ref-vol-horas { background-color: #ffcc80 !important; color: black; } /* Naranja suave */
-        .date.eventos { background-color: #add8e6 !important; color: black; } /* Azul */
-        .date.cambio-guardia { background-color: #d2b48c !important; color: black; } /* Marrón */
-        .date.devolucion-guardia { background-color: #d2b48c !important; color: black; } /* Marrón */
-        .date.superior { background-color: #9370db !important; color: white; } /* Púrpura */
-        .date.permiso { background-color: #90ee90 !important; color: black; } /* Verde */
+        .date.ref-ob { background-color: #ff6347 !important; color: white; } 
+        .date.ref-vol { background-color: #ffa500 !important; color: black; } 
+        .date.ref-vol-horas { background-color: #ffcc80 !important; color: black; } 
+        .date.eventos { background-color: #add8e6 !important; color: black; } 
+        .date.cambio-guardia { background-color: #d2b48c !important; color: black; } 
+        .date.devolucion-guardia { background-color: #d2b48c !important; color: black; }
+        .date.superior { background-color: #9370db !important; color: white; } 
+        .date.permiso { background-color: #90ee90 !important; color: black; } 
     </style>
 </head>
 <body>
@@ -482,9 +481,9 @@
 
                     <select id="permisosSelect">
                         <option value="" disabled selected hidden>Permisos:</option>
-                        <option value="vacaciones" id="optVac">🟢 Vacaciones (7)</option>
-                        <option value="moscosos" id="optMos">🟢 Moscosos (2)</option>
-                        <option value="compensatorio" id="optCon">🟢 Compensatorio (3)</option>
+                        <option value="vacaciones" id="optVac">🟢 Vacaciones</option>
+                        <option value="moscosos" id="optMos">🟢 Moscosos</option>
+                        <option value="compensatorio" id="optCon">🟢 Compensatorio</option>
                         <option value="devolucion-guardia">🟤 Devolución de Guardia</option>
                         <option value="vac-ant-horas">🟢 Vac. por antigüedad (Horas)</option>
                         <option value="otros-horas">🟢 Otros (Horas)</option>
@@ -521,7 +520,7 @@
 
     </div>
 
-    <div class="version-text">Versión 3.5 - Cactus</div>
+    <div class="version-text">Versión 3.7 - Cactus (Cálculos de Año exactos)</div>
 
     <!-- SCRIPT PRINCIPAL -->
     <script>
@@ -665,34 +664,76 @@
                     return mins;
                 }
 
-                let remVac = 7, remMos = 2, remCon = 3;
-
-                function updatePermissionLimits() {
-                    let usedVac = 0, usedMos = 0, usedCon = 0;
-
+                // CÁLCULO DE PERMISOS EXACOT (Enero a Marzo consumen primero lo atrasado)
+                function getPermStatus(year, typeBase, maxAllowed) {
+                    let countPrev = 0;
                     for (const key in paintedDays) {
-                        if (key.startsWith(`${currentYear}-`)) {
-                            const tipoBase = paintedDays[key].split('|')[0];
-                            if (tipoBase === 'vacaciones') usedVac++;
-                            if (tipoBase === 'moscosos') usedMos++;
-                            if (tipoBase === 'compensatorio') usedCon++;
+                        if (key.startsWith(`${year-1}-`)) {
+                            if (paintedDays[key].split('|')[0] === typeBase) countPrev++;
+                        }
+                    }
+                    let leftoverPrev = Math.max(0, maxAllowed - countPrev);
+
+                    let countCurrentQ1 = 0;
+                    let countCurrentRest = 0;
+                    for (const key in paintedDays) {
+                        if (key.startsWith(`${year}-`)) {
+                            let m = parseInt(key.split('-')[1]);
+                            if (paintedDays[key].split('|')[0] === typeBase) {
+                                if (m < 3) countCurrentQ1++;
+                                else countCurrentRest++;
+                            }
                         }
                     }
 
-                    remVac = Math.max(0, 7 - usedVac);
-                    remMos = Math.max(0, 2 - usedMos);
-                    remCon = Math.max(0, 3 - usedCon);
+                    let consumedLeftover = Math.min(leftoverPrev, countCurrentQ1);
+                    let consumedNewQ1 = countCurrentQ1 - consumedLeftover;
+                    let remainingLeftover = leftoverPrev - consumedLeftover;
+                    let remainingNew = Math.max(0, maxAllowed - consumedNewQ1 - countCurrentRest);
 
-                    document.getElementById('optVac').textContent = `🟢 Vacaciones (${remVac})`;
-                    document.getElementById('optMos').textContent = `🟢 Moscosos (${remMos})`;
-                    document.getElementById('optCon').textContent = `🟢 Compensatorio (${remCon})`;
+                    return { remainingLeftover, remainingNew };
                 }
 
-                function checkPermissionLimit(tipo) {
-                    if (tipo === 'vacaciones' && remVac <= 0) return false;
-                    if (tipo === 'moscosos' && remMos <= 0) return false;
-                    if (tipo === 'compensatorio' && remCon <= 0) return false;
-                    return true;
+                function updatePermissionLimits() {
+                    let vac = getPermStatus(currentYear, 'vacaciones', 7);
+                    let mos = getPermStatus(currentYear, 'moscosos', 2);
+                    let con = getPermStatus(currentYear, 'compensatorio', 3);
+
+                    function formatLabel(name, st) {
+                        if (currentMonth < 3) {
+                            if (st.remainingLeftover > 0) {
+                                return `🟢 ${name} (${st.remainingLeftover} + ${st.remainingNew})`;
+                            } else {
+                                return `🟢 ${name} (${st.remainingNew})`;
+                            }
+                        } else {
+                            return `🟢 ${name} (${st.remainingNew})`;
+                        }
+                    }
+
+                    document.getElementById('optVac').textContent = formatLabel('Vacaciones', vac);
+                    document.getElementById('optMos').textContent = formatLabel('Moscosos', mos);
+                    document.getElementById('optCon').textContent = formatLabel('Compensatorio', con);
+                }
+
+                function checkPermissionLimit(tipo, dateKeyToPaint) {
+                    const parts = dateKeyToPaint.split('-');
+                    const y = parseInt(parts[0]);
+                    const m = parseInt(parts[1]); 
+
+                    let maxAllowed = 0;
+                    if (tipo === 'vacaciones') maxAllowed = 7;
+                    else if (tipo === 'moscosos') maxAllowed = 2;
+                    else if (tipo === 'compensatorio') maxAllowed = 3;
+                    else return true;
+
+                    let st = getPermStatus(y, tipo, maxAllowed);
+                    
+                    if (m < 3) {
+                        return (st.remainingLeftover > 0 || st.remainingNew > 0);
+                    } else {
+                        return (st.remainingNew > 0);
+                    }
                 }
 
                 function updateStats() {
@@ -729,7 +770,6 @@
                             if (tipoBase === 'guardia' || tipoBase === 'ref-ob' || tipoBase === 'ref-vol' || tipoBase === 'cambio-guardia') {
                                 solapes++;
                                 nocturnos++;
-
                                 if (todayIsFestivo) {
                                     if (dayOfWeek === 6) festivosGuardia += 1.5;
                                     else if (tomorrowIsFestivo) festivosGuardia += 2;
@@ -738,6 +778,19 @@
                                     if (tomorrowIsFestivo) festivosGuardia += 0.5;
                                 }
                             } 
+                            else if (tipoBase === 'vacaciones' || tipoBase === 'moscosos' || tipoBase === 'compensatorio') {
+                                nocturnos++;
+                                if (todayIsFestivo) {
+                                    if (dayOfWeek === 6) festivosGuardia += 1.5;
+                                    else if (tomorrowIsFestivo) festivosGuardia += 2;
+                                    else festivosGuardia += 1;
+                                } else {
+                                    if (tomorrowIsFestivo) festivosGuardia += 0.5;
+                                }
+                            }
+                            else if (tipoBase === 'devolucion-guardia') {
+                                // No suma nada
+                            }
                             else if (tipoBase === 'ref-vol-horas' || tipoBase === 'eventos') {
                                 if (tipoBase === 'ref-vol-horas') solapes++;
                                 
@@ -754,7 +807,6 @@
                                 const startTramo1 = Math.max(minI, 540);
                                 const endTramo1 = Math.min(minF, 1440);
                                 const duracionTramo1 = Math.max(0, endTramo1 - startTramo1);
-
                                 if (duracionTramo1 > 0 && todayIsFestivo) {
                                     if (duracionTramo1 <= 300) festivosGuardia += 0.5;
                                     else festivosGuardia += 1;
@@ -763,11 +815,43 @@
                                 const startTramo2 = Math.max(minI, 1440);
                                 const endTramo2 = Math.min(minF, 1980);
                                 const duracionTramo2 = Math.max(0, endTramo2 - startTramo2);
-
                                 if (duracionTramo2 > 0 && tomorrowIsFestivo) {
                                     if (duracionTramo2 <= 300) festivosGuardia += 0.5;
                                     else festivosGuardia += 1;
                                 }
+                            }
+                            else if (tipoBase === 'vac-ant-horas' || tipoBase === 'otros-horas') {
+                                solapes++;
+                                
+                                const hInicio = savedData[1] || "00:00";
+                                const hFin = savedData[2] || "00:00";
+                                
+                                const absI = timeToShiftMinutes(hInicio, false);
+                                let absF = timeToShiftMinutes(hFin, true);
+                                if (absF <= absI) absF += 1440;
+
+                                const absTramo1 = Math.max(0, Math.min(absF, 1440) - Math.max(absI, 540));
+                                const duracionTramo1 = 900 - absTramo1; 
+                                if (duracionTramo1 > 0 && todayIsFestivo) {
+                                    if (duracionTramo1 <= 300) festivosGuardia += 0.5;
+                                    else festivosGuardia += 1;
+                                }
+
+                                const absTramo2 = Math.max(0, Math.min(absF, 1980) - Math.max(absI, 1440));
+                                const duracionTramo2 = 540 - absTramo2; 
+                                if (duracionTramo2 > 0 && tomorrowIsFestivo) {
+                                    if (duracionTramo2 <= 300) festivosGuardia += 0.5;
+                                    else festivosGuardia += 1;
+                                }
+
+                                const absTramoNoct1 = Math.max(0, Math.min(absF, 1620) - Math.max(absI, 1320));
+                                const workedNoct1 = 300 - absTramoNoct1; 
+
+                                const absTramoNoct2 = Math.max(0, Math.min(absF, 1980) - Math.max(absI, 1620));
+                                const workedNoct2 = 360 - absTramoNoct2; 
+
+                                if (workedNoct2 > 0) nocturnos += 1;
+                                else if (workedNoct1 > 0) nocturnos += 0.5;
                             }
                         }
                     }
@@ -811,13 +895,35 @@
                         
                         const dateKey = targetDate.dataset.date;
                         if (!dateKey) return;
+
+                        const parts = dateKey.split('-');
+                        const cellDate = new Date(parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2]));
+                        const hasBaseGuardia = (perfilTurnoAsignado && turnosMap[dateKey] === perfilTurnoAsignado && (!perfilFechaIngreso || cellDate >= perfilFechaIngreso));
+                        const isPermiso = ['vacaciones', 'moscosos', 'compensatorio', 'devolucion-guardia', 'vac-ant-horas', 'otros-horas'].includes(currentColor);
                         
                         if (currentColor === 'borrar') {
                             delete paintedDays[dateKey];
                         } else {
-                            if (!checkPermissionLimit(currentColor)) {
-                                alert("Ya no te quedan más de esos permisos.");
-                                return;
+                            if (isPermiso) {
+                                let currentPaint = paintedDays[dateKey] ? paintedDays[dateKey].split('|')[0] : null;
+                                let isWorking = hasBaseGuardia || currentPaint === 'ref-ob' || currentPaint === 'cambio-guardia';
+
+                                if (currentColor === 'vacaciones') {
+                                    if (!hasBaseGuardia) {
+                                        alert("Ese día no estás trabajando.");
+                                        return;
+                                    }
+                                } else {
+                                    if (!isWorking) {
+                                        alert("Ese día no estás trabajando.");
+                                        return;
+                                    }
+                                }
+                                
+                                if (!checkPermissionLimit(currentColor, dateKey)) {
+                                    alert("Ya no te quedan más de esos permisos.");
+                                    return;
+                                }
                             }
 
                             if (currentColor.includes('horas')) {
