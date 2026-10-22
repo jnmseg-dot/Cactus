@@ -27,12 +27,12 @@
             box-sizing: border-box;
         }
 
-        /* --- ESTILOS DEL BANNER Y BOTÓN PERFIL --- */
+       /* --- ESTILOS DEL BANNER Y SUS BOTONES --- */
         .top-banner-container {
             width: 100%;
             max-width: 800px;
             margin-bottom: 25px;
-            position: relative; /* Clave para meter el botón dentro */
+            position: relative; 
             display: flex;
             justify-content: center;
         }
@@ -47,31 +47,31 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
-       /* --- ESTILOS DE LOS BOTONES DEL BANNER --- */
         .banner-buttons-group {
             position: absolute;
-            bottom: 10px; /* Separación desde abajo */
-            right: 20px;  /* Separación desde la derecha (alineado al final de CACTUS) */
+            bottom: 8%;  /* Sube/baja proporcionalmente con la imagen */
+            right: 5%;   /* Alinea el borde derecho exactamente con la letra 'S' */
+            width: 48%;  /* Limita el ancho al tamaño exacto de la palabra CACTUS */
             display: flex;
-            gap: 15px; /* Espacio proporcional entre los botones */
+            gap: 10px;   /* Separación entre los dos botones */
             z-index: 100;
         }
 
         .banner-btn {
+            flex: 1; /* Obliga a los dos botones a repartirse el espacio al 50% */
             background-color: white;
             border: 2px solid black;
             border-radius: 8px;
-            padding: 8px 15px;
+            padding: 6px 2px; /* Reducimos el relleno para que quepa bien el texto */
             font-weight: bold;
-            font-size: 0.95em;
+            font-size: 0.9em;
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             transition: 0.2s;
+            text-align: center; /* Centra el texto dentro de cada botón */
         }
 
-        .banner-btn:hover {
-            background-color: #e9ecef;
-        }
+        .banner-btn:hover { background-color: #e9ecef; }
 
         .modal-overlay {
             display: none;
