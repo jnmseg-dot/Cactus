@@ -729,16 +729,16 @@
                     remCon = currentMonth < 3 ? (con.remainingLeftover + con.remainingNew) : con.remainingNew;
 
                     function formatLabel(name, st) {
-                        if (currentMonth < 3) {
-                            if (st.remainingLeftover > 0) {
-                                return `● ${name} (${st.remainingLeftover} + ${st.remainingNew})`;
-                            } else {
-                                return `● ${name} (${st.remainingNew})`;
-                            }
+                    if (currentMonth < 3) {
+                        if (st.remainingLeftover > 0) {
+                            return `🟢 ${name} (${st.remainingLeftover} + ${st.remainingNew})`;
                         } else {
-                            return `● ${name} (${st.remainingNew})`;
+                            return `🟢 ${name} (${st.remainingNew})`;
                         }
+                    } else {
+                        return `🟢 ${name} (${st.remainingNew})`;
                     }
+                }
 
                     document.getElementById('optVac').textContent = formatLabel('Vacaciones', vac);
                     document.getElementById('optMos').textContent = formatLabel('Moscosos', mos);
