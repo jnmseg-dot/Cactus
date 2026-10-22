@@ -401,7 +401,17 @@
         .date.ref-vol-horas { background-color: #ffcc80 !important; color: black; } 
         .date.eventos-horas { background-color: #add8e6 !important; color: black; }
         .date.cambio-guardia { background-color: #d2b48c !important; color: black; } 
-        .date.superior { background-color: #9370db !important; color: white; } 
+       /* Diseño de los triángulos de categoría */
+        .triangulos-superior {
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            font-size: 0.65em;
+            color: black;
+            font-weight: bold;
+            letter-spacing: 1px;
+            z-index: 3;
+        } 
 
         /* PERMISOS: Degradado de Verde Fuerte a Verde Suave */
         .date.vacaciones { background-color: #1b5e20 !important; color: white; } 
@@ -485,7 +495,7 @@
                         <option value="ref-vol-horas">🟠 Refuerzo voluntario (Horas)</option>
                         <option value="eventos-horas">🔵 Eventos (Horas)</option>
                         <option value="cambio-guardia">🟤 Cambio de guardia</option>
-                        <option value="superior">🟣 Superior Categoría</option>
+                        <option value="superior">▲ Superior Categoría</option>
                         <option value="borrar">⚪ Borrar</option>
                     </select>
 
