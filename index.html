@@ -50,28 +50,25 @@
         .banner-buttons-group {
             position: absolute;
             bottom: 8%;  
-            right: 5%;   
-            /* Quitamos el ancho fijo para que los botones decidan su tamaño */
+            right: 5%;   /* Borde derecho en la 'S' */
+            width: 48%;  /* Ocupa el ancho exacto del rectángulo verde que dibujaste */
             display: flex;
-            justify-content: flex-end; /* Los empuja para que queden alineados a la derecha */
-            gap: 12px;   
+            justify-content: space-between; /* CLAVE: Empuja un botón a cada extremo */
             z-index: 100;
         }
 
         .banner-btn {
-            /* Quitamos el flex: 1 para que no se estiren artificialmente */
             background-color: white;
             border: 2px solid black;
             border-radius: 8px;
-            padding: 8px 15px; /* Restauramos los márgenes interiores originales */
+            padding: 8px 15px; /* Mantienen su tamaño natural exacto */
             font-weight: bold;
-            font-size: 0.95em; /* Tamaño de letra original */
+            font-size: 0.95em;
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             transition: 0.2s;
             text-align: center; 
         }
-
         .banner-btn:hover { background-color: #e9ecef; }
 
         .modal-overlay {
