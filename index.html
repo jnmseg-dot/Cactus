@@ -399,7 +399,7 @@
         .date.ref-ob { background-color: #ff6347 !important; color: white; } 
         .date.ref-vol { background-color: #ffa500 !important; color: black; } 
         .date.ref-vol-horas { background-color: #ffcc80 !important; color: black; } 
-        .date.eventos { background-color: #add8e6 !important; color: black; } 
+        .date.eventos-horas { background-color: #add8e6 !important; color: black; }
         .date.cambio-guardia { background-color: #d2b48c !important; color: black; } 
         .date.superior { background-color: #9370db !important; color: white; } 
 
@@ -483,7 +483,7 @@
                         <option value="ref-ob" style="color: #ff6347;">● Refuerzo obligatorio</option>
                         <option value="ref-vol" style="color: #ffa500;">● Refuerzo voluntario</option>
                         <option value="ref-vol-horas" style="color: #ffcc80;">● Refuerzo voluntario (Horas)</option>
-                        <option value="eventos" style="color: #add8e6;">● Eventos (Horas)</option>
+                        <option value="eventos-horas" style="color: #add8e6;">● Eventos (Horas)</option>
                         <option value="cambio-guardia" style="color: #d2b48c;">● Cambio de guardia</option>
                         <option value="superior" style="color: #9370db;">● Superior Categoría</option>
                         <option value="borrar">⚪ Borrar</option>
@@ -820,7 +820,7 @@
                             else if (tipoBase === 'devolucion-guardia') {
                                 // 0 puntos
                             }
-                            else if (tipoBase === 'ref-vol-horas' || tipoBase === 'eventos') {
+                            else if (tipoBase === 'ref-vol-horas' || tipoBase === 'eventos-horas') {
                                 if (tipoBase === 'ref-vol-horas') solapes++;
                                 
                                 const hInicio = savedData[1] || "00:00";
