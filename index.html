@@ -667,6 +667,7 @@
                 let currentYear = currentDate.getFullYear();
                 let currentColor = null;
                 const paintedDays = {}; 
+                const superiorDays = {}; // Memoria independiente para los triángulos
 
                 const festivos = [
                     { mes: 0, dia: 1 },   { mes: 0, dia: 6 },
@@ -945,6 +946,17 @@
                         
                         if (currentColor === 'borrar') {
                             delete paintedDays[dateKey];
+                            delete superiorDays[dateKey]; // Borra también los triángulos
+                        } else if (currentColor === 'superior') {
+                            // Funciona como interruptor: pone o quita triángulos sin tocar el color
+                            if (superiorDays[dateKey]) delete superiorDays[dateKey];
+                            else superiorDays[dateKey] = true;
+                            
+                            tipoGuardiaSelect.value = '';
+                            checkInputsLogic(null);
+                            currentColor = null;
+                            renderCalendar();
+                            return; // Terminamos aquí para no sobreescribir el color base
                         } else {
                             if (isPermiso) {
                                 let currentPaintData = paintedDays[dateKey] ? paintedDays[dateKey].split('|') : null;
