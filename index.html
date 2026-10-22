@@ -628,6 +628,15 @@
 
                 profileBtn.addEventListener('click', () => profileModalOverlay.classList.add('active'));
                 
+                nominaBtn.addEventListener('click', () => {
+                    if (nominaBtn.textContent === "Nómina avanzada") {
+                        alert("En este momento se encuentra en fase de desarrollo.");
+                        nominaBtn.textContent = "Nómina simple";
+                    } else {
+                        nominaBtn.textContent = "Nómina avanzada";
+                    }
+                });
+
                 closeProfileBtn.addEventListener('click', () => {
                     const turnoVal = document.getElementById('perfilTurno').value;
                     if (turnoVal) perfilTurnoAsignado = parseInt(turnoVal);
