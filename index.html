@@ -47,42 +47,31 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
-        .profile-btn {
+       /* --- ESTILOS DE LOS BOTONES DEL BANNER --- */
+        .banner-buttons-group {
             position: absolute;
-            top: 15px;
-            right: 15px;
+            bottom: 10px; /* Separación desde abajo */
+            right: 20px;  /* Separación desde la derecha (alineado al final de CACTUS) */
+            display: flex;
+            gap: 15px; /* Espacio proporcional entre los botones */
+            z-index: 100;
+        }
+
+        .banner-btn {
             background-color: white;
             border: 2px solid black;
             border-radius: 8px;
             padding: 8px 15px;
             font-weight: bold;
-            font-size: 1em;
+            font-size: 0.95em;
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
             transition: 0.2s;
-            z-index: 100;
         }
 
-       .profile-btn:hover { background-color: #e9ecef; }
-
-        .nomina-btn {
-            position: absolute;
-            bottom: 15px; /* Lo coloca abajo del banner */
-            left: 50%; /* Lo centra horizontalmente */
-            transform: translateX(-50%); /* Ajuste fino del centrado */
-            background-color: white;
-            border: 2px solid black;
-            border-radius: 8px;
-            padding: 8px 15px;
-            font-weight: bold;
-            font-size: 0.9em;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            transition: 0.2s;
-            z-index: 100;
+        .banner-btn:hover {
+            background-color: #e9ecef;
         }
-
-        .nomina-btn:hover { background-color: #e9ecef; }
 
         .modal-overlay {
             display: none;
