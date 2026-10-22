@@ -574,6 +574,7 @@
 
                 let perfilTurnoAsignado = null;
                 let perfilFechaIngreso = null;
+                let perfilCategoriaAsignada = 'bombero'; // Por defecto
 
                 const turnosMap = {};
                 function initTurnos() {
@@ -639,9 +640,11 @@
                     }
                 });
 
-                closeProfileBtn.addEventListener('click', () => {
+               closeProfileBtn.addEventListener('click', () => {
                     const turnoVal = document.getElementById('perfilTurno').value;
                     if (turnoVal) perfilTurnoAsignado = parseInt(turnoVal);
+                    
+                    perfilCategoriaAsignada = document.getElementById('perfilCategoria').value;
                     
                     const fechaStr = document.getElementById('perfilFechaIngreso').value;
                     if (fechaStr) {
