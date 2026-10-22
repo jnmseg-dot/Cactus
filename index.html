@@ -1167,11 +1167,23 @@
                                 dateDiv.appendChild(labelDiv);
                             }
                         }
-                    } 
+                   } 
                     else if (perfilTurnoAsignado && turnosMap[dateKey] === perfilTurnoAsignado) {
                         if (perfilFechaIngreso && cellDate >= perfilFechaIngreso) {
                             dateDiv.classList.add('guardia');
                         }
+                    }
+
+                    // --- PINTAR LOS TRIÁNGULOS (Independiente del color de fondo) ---
+                    if (superiorDays[dateKey]) {
+                        let numTr = '▲▲'; // Por defecto (Bombero)
+                        if (perfilCategoriaAsignada === 'jefe-dotacion') numTr = '▲▲▲';
+                        if (perfilCategoriaAsignada === 'jefe-turno') numTr = '▲▲▲▲';
+                        
+                        let trDiv = document.createElement('div');
+                        trDiv.className = 'triangulos-superior';
+                        trDiv.textContent = numTr;
+                        dateDiv.appendChild(trDiv);
                     }
                     
                     return dateDiv;
