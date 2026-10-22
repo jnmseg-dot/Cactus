@@ -1129,21 +1129,7 @@
                                 <div style="height:50%; display:flex; flex-direction:column; justify-content:flex-start; align-items:center; padding-top:1px; color:${botColor}; font-size:0.75em; font-weight:bold; line-height:1.1;">${botText}</div>
                             `;
                             dateDiv.appendChild(labelDiv);
-                       } 
-                        else if (tipoBase === 'superior') {
-                            // Si es su día de guardia, le mantenemos el color rojo
-                            if (perfilTurnoAsignado && turnosMap[dateKey] === perfilTurnoAsignado && (!perfilFechaIngreso || cellDate >= perfilFechaIngreso)) {
-                                dateDiv.classList.add('guardia');
-                            }
-                            
-                            // Elegimos cuántos triángulos poner según el perfil
-                            let numTr = perfilCategoriaAsignada === 'jefe-dotacion' ? '▲▲▲' : '▲▲';
-                            
-                            let trDiv = document.createElement('div');
-                            trDiv.className = 'triangulos-superior';
-                            trDiv.textContent = numTr;
-                            dateDiv.appendChild(trDiv);
-                        }
+                      } 
                         else {
                             if (['vacaciones', 'moscosos', 'compensatorio', 'devolucion-guardia', 'vac-ant-horas', 'otros-horas'].includes(tipoBase)) {
                                 if (tipoBase === 'devolucion-guardia') {
