@@ -1,229 +1,1182 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendario Cactus</title><link rel="icon" href="data:;base64,iVBORw0KGgo=">
-    <!-- ESCUDO ANTI-ERRORES -->
-    <script>window.onerror=function(m,u,l){document.body.innerHTML=`<div style="padding:20px;text-align:center"><div style="background:#ffe6e6;color:#cc0000;border:3px solid #cc0000;padding:20px;border-radius:10px"><h2>🚨 ERROR EN LÍNEA ${l} 🚨</h2><p>${m}</p></div></div>`;};</script>
-    <style>
-        body{font-family:'Segoe UI',Tahoma,sans-serif;display:flex;flex-direction:column;align-items:center;min-height:100vh;margin:0;background:#f0f0f0;padding:20px;box-sizing:border-box}
-        .profile-btn{position:fixed;top:20px;right:20px;background:#fff;border:2px solid #000;border-radius:8px;padding:10px 18px;font-weight:bold;cursor:pointer;box-shadow:0 4px 8px rgba(0,0,0,0.1);z-index:100}
-        .profile-btn:hover{background:#e9ecef}
-        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);justify-content:center;align-items:center;z-index:200}
-        .modal-overlay.active{display:flex}
-        .profile-modal{background:#fff;border:2px solid #000;border-radius:8px;padding:25px;width:320px;display:flex;flex-direction:column;gap:15px;box-sizing:border-box}
-        .profile-modal h3{margin:0;border-bottom:2px solid #000;padding-bottom:10px;text-align:center;text-transform:uppercase}
-        .profile-group{display:flex;flex-direction:column;gap:6px}
-        .profile-group label{font-weight:bold;font-size:0.95em}
-        .profile-group select,.profile-group input{padding:8px;font-size:1em;border-radius:6px;border:2px solid #000;font-weight:bold;outline:none}
-        .close-modal-btn{margin-top:10px;padding:10px;background:#000;color:#fff;border:none;border-radius:6px;font-weight:bold;cursor:pointer}
-        .main-container{display:flex;flex-wrap:wrap;gap:30px;justify-content:center;margin-bottom:20px}
-        .calendar{background:#fff;border-radius:8px;box-shadow:0 4px 8px rgba(0,0,0,0.1);width:350px;border:2px solid #000;overflow:hidden}
-        .header{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;background:#f8f9fa;border-bottom:2px solid #000}
-        .header button{background:none;border:none;font-size:20px;font-weight:bold;cursor:pointer}
-        .month-year select{font-size:1.1em;font-weight:bold;border:none;background:transparent;cursor:pointer;text-transform:uppercase;outline:none;appearance:none;text-align:center}
-        .days{display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-weight:bold;background:#f8f9fa;border-bottom:2px solid #000;font-size:0.8em}
-        .days div{padding:10px 0;border-right:1px solid #ccc}
-        .dates{display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:60px;border-left:2px solid #000}
-        .date{display:flex;justify-content:center;align-items:center;border-right:1px solid #000;border-bottom:1px solid #000;box-sizing:border-box;color:#000;cursor:pointer;position:relative;overflow:hidden}
-        .date.inactive{background:#f9f9f9;color:#aaa;cursor:default}
-        .day-number{display:flex;justify-content:center;align-items:center;width:28px;height:28px;border-radius:50%}
-        .festivo{background:purple;color:#fff;font-weight:bold}
-        .date.has-label{flex-direction:column;justify-content:flex-start;padding:2px}
-        .date.has-label .day-number{align-self:flex-start;width:18px;height:18px;font-size:0.7em;position:absolute;top:2px;left:2px;z-index:2}
-        .custom-label{font-size:0.75em;font-weight:bold;text-align:center;margin-top:14px;line-height:1.1;z-index:1;width:100%}
-        .legend{margin-top:25px;display:flex;flex-direction:column;align-items:center;gap:10px;width:100%}
-        .legend-controls{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
-        .legend-controls select{padding:8px 12px;font-size:0.95em;border-radius:8px;border:2px solid #000;font-weight:bold;width:250px;cursor:pointer;outline:none}
-        .input-group-container{display:none;flex-direction:column;gap:12px;background:#fff;padding:15px;border:2px solid #000;border-radius:8px;width:280px}
-        .input-group{display:flex;justify-content:space-between;align-items:center}
-        .input-group label{font-weight:bold;font-size:0.9em}
-        .input-group input{border:1px solid #ccc;border-radius:4px;padding:5px;font-weight:bold;outline:none}
-        .stats-panel{background:#fff;border-radius:8px;border:2px solid #000;padding:20px;width:220px;height:fit-content;box-shadow:0 4px 8px rgba(0,0,0,0.1)}
-        .stats-panel h3{margin-top:0;border-bottom:2px solid #000;padding-bottom:10px;text-align:center}
-        .stats-panel p{display:flex;justify-content:space-between;font-weight:bold;margin:15px 0;border-bottom:1px dashed #ccc;padding-bottom:5px}
-        .version-text{font-size:0.9em;color:#777;font-weight:bold;margin-top:20px;text-align:center}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario Cactus</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    
+    <!-- ESCUDO DE SEGURIDAD (Si falla algo, te avisará en pantalla) -->
+    <script>
+        window.onerror = function(msg, url, lineNo) {
+            document.body.innerHTML = '<div style="padding: 20px; font-family: sans-serif;"><div style="background-color:#ffe6e6; color:#cc0000; padding: 20px; border: 2px solid #cc0000; border-radius: 8px;"><h1>🚨 ERROR TÉCNICO</h1><p><b>Mensaje:</b> ' + msg + '</p><p><b>Línea:</b> ' + lineNo + '</p></div></div>';
+            return false;
+        };
+    </script>
 
-        /* COLORES */
-        .date.guardia{background:#ff4d4d!important;color:#fff}
-        .date.ref-ob{background:#ff6347!important;color:#fff}
-        .date.ref-vol{background:#ffa500!important;color:#000}
-        .date.ref-vol-horas{background:#ffcc80!important;color:#000}
-        .date.eventos{background:#add8e6!important;color:#000}
-        .date.cambio-guardia, .date.devolucion-guardia{background:#d2b48c!important;color:#000}
-        .date.superior{background:#9370db!important;color:#fff}
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .profile-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: white;
+            border: 2px solid black;
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-weight: bold;
+            font-size: 1em;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: 0.2s;
+            z-index: 100;
+        }
+
+        .profile-btn:hover { background-color: #e9ecef; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .profile-modal {
+            background-color: white;
+            border: 2px solid black;
+            border-radius: 8px;
+            padding: 25px;
+            width: 320px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-sizing: border-box;
+        }
+
+        .profile-modal h3 {
+            margin: 0;
+            border-bottom: 2px solid black;
+            padding-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+            font-size: 1.2em;
+        }
+
+        .profile-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .profile-group label {
+            font-weight: bold;
+            font-size: 0.95em;
+            color: #333;
+        }
+
+        .profile-group select, .profile-group input {
+            padding: 8px 10px;
+            font-size: 1em;
+            border-radius: 6px;
+            border: 2px solid #000;
+            font-family: inherit;
+            font-weight: bold;
+            background-color: white;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .close-modal-btn {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #000;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1em;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .close-modal-btn:hover { background-color: #333; }
+
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            align-items: flex-start;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .calendar {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 350px;
+            overflow: hidden;
+            border: 2px solid black;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 2px solid black;
+        }
+
+        .header button {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #333;
+            padding: 0 10px;
+            font-weight: bold;
+        }
+
+        .month-year select {
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            text-transform: uppercase;
+            appearance: none;
+            text-align: center;
+            outline: none;
+        }
+
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-weight: bold;
+            color: #555;
+            background-color: #f8f9fa;
+            border-bottom: 2px solid black;
+            font-size: 0.8em;
+        }
+
+        .days div {
+            padding: 10px 0;
+            border-right: 1px solid #ccc;
+        }
+
+        .days div:last-child { border-right: none; }
+
+        .dates {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-auto-rows: 60px;
+            border-left: 2px solid black;
+        }
+
+        .date {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-right: 1px solid black;
+            border-bottom: 1px solid black;
+            box-sizing: border-box;
+            color: #000;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            position: relative;
+            overflow: hidden;
+            min-width: 0;
+        }
         
-        /* DEGRADADO PERMISOS VERDES */
-        .date.vacaciones{background:#1b5e20!important;color:#fff} /* Verde muy oscuro */
-        .date.moscosos{background:#2e8b57!important;color:#fff} /* Verde oscuro */
-        .date.compensatorio{background:#3cb371!important;color:#000} /* Verde medio */
-        .date.vac-ant-horas{background:#90ee90!important;color:#000} /* Verde claro */
-        .date.otros-horas{background:#c1ffc1!important;color:#000} /* Verde muy claro */
+        .date:nth-child(7n) { border-right: none; }
+        .date.inactive { color: #aaa; background-color: #f9f9f9; cursor: default; }
+
+        .day-number {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+        }
+
+        .festivo { background-color: purple; color: white; font-weight: bold; }
+
+        .date.has-label {
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 2px; 
+        }
+
+        .date.has-label .day-number {
+            align-self: flex-start; 
+            width: 18px; 
+            height: 18px;
+            font-size: 0.7em;
+            line-height: 18px;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            z-index: 2;
+        }
+
+        .custom-label {
+            font-size: 0.75em;
+            font-weight: bold;
+            text-align: center;
+            color: #000;
+            margin-top: 14px;
+            line-height: 1.1;
+            z-index: 1;
+            width: 100%;
+        }
+
+        .legend {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            gap: 10px;
+        }
+
+        .legend-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .legend select {
+            padding: 8px 12px;
+            font-size: 0.95em;
+            border-radius: 8px;
+            border: 2px solid #000;
+            cursor: pointer;
+            outline: none;
+            font-weight: bold;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            width: 250px;
+            text-align: left;
+        }
+
+        .input-group-container {
+            margin-top: 5px;
+            display: none; 
+            flex-direction: column;
+            gap: 12px;
+            background-color: white;
+            padding: 15px;
+            border: 2px solid black;
+            border-radius: 8px;
+            width: 280px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .input-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .input-group label {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .input-group input {
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 5px;
+            font-family: inherit;
+            font-size: 1em;
+            outline: none;
+        }
+        
+        .input-group input:focus { border-color: #000; }
+
+        .stats-panel {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: 2px solid black;
+            padding: 20px;
+            width: 220px;
+            height: fit-content;
+        }
+
+        .stats-panel h3 {
+            margin-top: 0;
+            border-bottom: 2px solid black;
+            padding-bottom: 10px;
+            text-align: center;
+            text-transform: uppercase;
+            font-size: 1.1em;
+        }
+
+        .stats-panel p {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 1.1em;
+            margin: 15px 0;
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 5px;
+        }
+
+        .stats-panel p:last-child { border-bottom: none; }
+
+        .version-text {
+            font-size: 0.9em;
+            color: #777;
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        /* --- COLORES OFICIALES --- */
+        .date.guardia { background-color: #ff4d4d !important; color: white; }
+        .date.ref-ob { background-color: #ff6347 !important; color: white; } 
+        .date.ref-vol { background-color: #ffa500 !important; color: black; } 
+        .date.ref-vol-horas { background-color: #ffcc80 !important; color: black; } 
+        .date.eventos { background-color: #add8e6 !important; color: black; } 
+        .date.cambio-guardia { background-color: #d2b48c !important; color: black; } 
+        .date.superior { background-color: #9370db !important; color: white; } 
+
+        /* PERMISOS: Degradado de Verde Fuerte a Verde Suave */
+        .date.vacaciones { background-color: #1b5e20 !important; color: white; } 
+        .date.moscosos { background-color: #2e8b57 !important; color: white; } 
+        .date.compensatorio { background-color: #3cb371 !important; color: black; } 
+        .date.devolucion-guardia { background-color: #d2b48c !important; color: black; } /* Marrón */
+        .date.vac-ant-horas { background-color: #90ee90 !important; color: black; } 
+        .date.otros-horas { background-color: #c1ffc1 !important; color: black; } 
     </style>
 </head>
 <body>
+
     <button id="profileBtn" class="profile-btn">Perfil</button>
+
     <div id="profileModalOverlay" class="modal-overlay">
         <div class="profile-modal">
             <h3>Perfil</h3>
-            <div class="profile-group"><label>Turno:</label><select id="perfilTurno"><option value="" hidden>Selecciona turno</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
-            <div class="profile-group"><label>Categoría:</label><select id="perfilCategoria"><option value="bombero">Bombero</option><option value="jefe-dotacion">Jefe de dotación ▲▲</option><option value="jefe-turno">Jefe de Turno ▲▲▲</option></select></div>
-            <div class="profile-group"><label>Fecha de ingreso:</label><input type="date" id="perfilFechaIngreso"></div>
+            
+            <div class="profile-group">
+                <label for="perfilTurno">Turno:</label>
+                <select id="perfilTurno">
+                    <option value="" disabled selected hidden>Selecciona tu turno</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                </select>
+            </div>
+
+            <div class="profile-group">
+                <label for="perfilCategoria">Categoría:</label>
+                <select id="perfilCategoria">
+                    <option value="bombero">Bombero</option>
+                    <option value="jefe-dotacion">Jefe de dotación ▲▲</option>
+                    <option value="jefe-turno">Jefe de Turno ▲▲▲</option>
+                </select>
+            </div>
+
+            <div class="profile-group">
+                <label for="perfilFechaIngreso">Fecha de ingreso:</label>
+                <input type="date" id="perfilFechaIngreso">
+            </div>
+
             <button id="closeProfileBtn" class="close-modal-btn">Guardar y cerrar</button>
         </div>
     </div>
 
     <div class="main-container">
+        
         <div class="calendar-section">
             <div class="calendar">
-                <div class="header"><button id="prevBtn">&lt;</button><div class="month-year"><span id="month"></span> <select id="yearSelect"></select></div><button id="nextBtn">&gt;</button></div>
-                <div class="days"><div>LUN</div><div>MAR</div><div>MIÉ</div><div>JUE</div><div>VIE</div><div>SÁB</div><div>DOM</div></div>
+                <div class="header">
+                    <button id="prevBtn">&lt;</button>
+                    <div class="month-year">
+                        <span id="month"></span>
+                        <select id="yearSelect"></select>
+                    </div>
+                    <button id="nextBtn">&gt;</button>
+                </div>
+                <div class="days">
+                    <div>LUN</div><div>MAR</div><div>MIÉ</div><div>JUE</div><div>VIE</div><div>SÁB</div><div>DOM</div>
+                </div>
                 <div class="dates" id="dates"></div>
             </div>
+
             <div class="legend">
                 <div class="legend-controls">
                     <select id="tipoGuardiaSelect">
-                        <option value="" hidden>&nbsp;&nbsp;Guardias extras:</option>
-                        <option value="ref-ob" style="color:#ff6347;">● Refuerzo obligatorio</option>
-                        <option value="ref-vol" style="color:#ffa500;">● Refuerzo voluntario</option>
-                        <option value="ref-vol-horas" style="color:#ffcc80;">● Refuerzo voluntario (Horas)</option>
-                        <option value="eventos" style="color:#add8e6;">● Eventos (Horas)</option>
-                        <option value="cambio-guardia" style="color:#d2b48c;">● Cambio de guardia</option>
-                        <option value="superior" style="color:#9370db;">● Superior Categoría</option>
+                        <option value="" disabled selected hidden>&nbsp;&nbsp;Guardias extras:</option>
+                        <option value="ref-ob" style="color: #ff6347;">● Refuerzo obligatorio</option>
+                        <option value="ref-vol" style="color: #ffa500;">● Refuerzo voluntario</option>
+                        <option value="ref-vol-horas" style="color: #ffcc80;">● Refuerzo voluntario (Horas)</option>
+                        <option value="eventos" style="color: #add8e6;">● Eventos (Horas)</option>
+                        <option value="cambio-guardia" style="color: #d2b48c;">● Cambio de guardia</option>
+                        <option value="superior" style="color: #9370db;">● Superior Categoría</option>
                         <option value="borrar">⚪ Borrar</option>
                     </select>
+
                     <select id="permisosSelect">
-                        <option value="" hidden>&nbsp;&nbsp;Permisos:</option>
-                        <option value="vacaciones" id="optVac" style="color:#1b5e20;">● Vacaciones</option>
-                        <option value="moscosos" id="optMos" style="color:#2e8b57;">● Moscosos</option>
-                        <option value="compensatorio" id="optCon" style="color:#3cb371;">● Compensatorio</option>
-                        <option value="devolucion-guardia" style="color:#d2b48c;">● Devolución de Guardia</option>
-                        <option value="vac-ant-horas" style="color:#90ee90;">● Vac. por antigüedad (Horas)</option>
-                        <option value="otros-horas" style="color:#c1ffc1;">● Otros (Horas)</option>
+                        <option value="" disabled selected hidden>&nbsp;&nbsp;Permisos:</option>
+                        <option value="vacaciones" id="optVac" style="color: #1b5e20;">● Vacaciones</option>
+                        <option value="moscosos" id="optMos" style="color: #2e8b57;">● Moscosos</option>
+                        <option value="compensatorio" id="optCon" style="color: #3cb371;">● Compensatorio</option>
+                        <option value="devolucion-guardia" style="color: #d2b48c;">● Devolución de Guardia</option>
+                        <option value="vac-ant-horas" style="color: #90ee90;">● Vac. por antigüedad (Horas)</option>
+                        <option value="otros-horas" style="color: #c1ffc1;">● Otros (Horas)</option>
                         <option value="borrar">⚪ Borrar</option>
                     </select>
                 </div>
+
                 <div id="timeInputs" class="input-group-container">
-                    <div class="input-group"><label>Hora inicio:</label><input type="time" id="horaInicio"></div>
-                    <div class="input-group"><label>Hora fin:</label><input type="time" id="horaFin"></div>
+                    <div class="input-group">
+                        <label for="horaInicio">Hora inicio:</label>
+                        <input type="time" id="horaInicio" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="horaFin">Hora fin:</label>
+                        <input type="time" id="horaFin" required>
+                    </div>
                 </div>
+
                 <div id="nameInputGroup" class="input-group-container">
-                    <div class="input-group"><label id="labelGuardiaNombre">Le haces la guardia a:</label><input type="text" id="guardiaNombre" placeholder="Nombre..." style="width:110px;"></div>
+                    <div class="input-group">
+                        <label id="labelGuardiaNombre" for="guardiaNombre">Le haces la guardia a:</label>
+                        <input type="text" id="guardiaNombre" placeholder="Nombre..." style="width: 110px;">
+                    </div>
                 </div>
             </div>
         </div>
+
         <div class="stats-panel">
             <h3>Cómputo Mensual</h3>
             <p>Solapes: <span id="countSolapes">0</span></p>
             <p>Nocturnos: <span id="countNocturnos">0</span></p>
             <p>Festivos: <span id="countFestivos">0</span></p>
         </div>
+
     </div>
-    <div class="version-text">Versión 3.9 - Cactus Compacto</div>
+
+    <div class="version-text">Versión 4.0 - Cactus Definitiva</div>
 
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const els = {
-            yS: document.getElementById('yearSelect'), mS: document.getElementById('month'),
-            dC: document.getElementById('dates'), pB: document.getElementById('prevBtn'), nB: document.getElementById('nextBtn'),
-            tG: document.getElementById('tipoGuardiaSelect'), pS: document.getElementById('permisosSelect'),
-            tI: document.getElementById('timeInputs'), hI: document.getElementById('horaInicio'), hF: document.getElementById('horaFin'),
-            nI: document.getElementById('nameInputGroup'), lN: document.getElementById('labelGuardiaNombre'), gN: document.getElementById('guardiaNombre'),
-            cS: document.getElementById('countSolapes'), cN: document.getElementById('countNocturnos'), cF: document.getElementById('countFestivos'),
-            prB: document.getElementById('profileBtn'), prO: document.getElementById('profileModalOverlay'), prC: document.getElementById('closeProfileBtn')
-        };
-        const mN = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-        const LBL = {'ref-ob':'Obl','ref-vol':'Vol','ref-vol-horas':'Vol','eventos':'Evet','cambio-guardia':'Camb','vacaciones':'Vac','moscosos':'Mos','compensatorio':'Con','devolucion-guardia':'Devl','vac-ant-horas':'Vac Ant','otros-horas':'Otr'};
-        const FES = [{m:0,d:1},{m:0,d:6},{m:1,d:17},{m:3,d:2},{m:3,d:3},{m:4,d:1},{m:5,d:29},{m:7,d:15},{m:8,d:8},{m:9,d:12},{m:10,d:2},{m:11,d:7},{m:11,d:8},{m:11,d:25}];
-        
-        let cD=new Date(), cM=cD.getMonth(), cY=cD.getFullYear(), cC=null, pTurno=null, pFecha=null, pDays={}, mapT={};
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+                const yearSelect = document.getElementById('yearSelect');
+                const monthSpan = document.getElementById('month');
+                const datesContainer = document.getElementById('dates');
+                const prevBtn = document.getElementById('prevBtn');
+                const nextBtn = document.getElementById('nextBtn');
+                
+                const tipoGuardiaSelect = document.getElementById('tipoGuardiaSelect');
+                const permisosSelect = document.getElementById('permisosSelect');
+                
+                const timeInputs = document.getElementById('timeInputs');
+                const horaInicio = document.getElementById('horaInicio');
+                const horaFin = document.getElementById('horaFin');
 
-        // INICIALIZAR TURNOS
-        let d = new Date(2024,0,1,12,0,0), eD = new Date(2035,11,31,12,0,0), tArr=[0,5,1,2,0,3,4,5,0,1,2,3], f={};
-        let tShift = 2; // Ajuste matemático directo para que el 14/10/2026 sea turno 1
-        while(d<=eD) {
-            let y=d.getFullYear(), m=d.getMonth(), dt=d.getDate(), aff = tArr[y-2024];
-            if(m===2 && aff>0 && tShift===aff && !f[y]) { f[y]=true; tShift=(tShift%5)+1; }
-            mapT[`${y}-${m}-${dt}`] = tShift;
-            tShift=(tShift%5)+1; d.setDate(d.getDate()+1);
-        }
+                const nameInputGroup = document.getElementById('nameInputGroup');
+                const labelGuardiaNombre = document.getElementById('labelGuardiaNombre');
+                const guardiaNombre = document.getElementById('guardiaNombre');
 
-        const isF = (y,m,d) => { let dw=new Date(y,m,d).getDay(); return dw===0||dw===6||FES.some(x=>x.m===m&&x.d===d); };
-        const t2m = (t,e) => { if(!t)return 0; let [h,m]=t.split(':').map(Number), ms=h*60+m; return (e&&ms<=540)||(!e&&ms<540)?ms+1440:ms; };
+                const valSolapes = document.getElementById('countSolapes');
+                const valNocturnos = document.getElementById('countNocturnos');
+                const valFestivos = document.getElementById('countFestivos');
 
-        // PERMISOS Y ESTADÍSTICAS
-        function getPerm(y, tb, mx) {
-            let cp=0, cq=0, cr=0;
-            for(let k in pDays) {
-                let v=pDays[k].split('|'), t=v[0]==='split'?v[3]:v[0];
-                if(t===tb) {
-                    if(k.startsWith(`${y-1}-`)) cp++;
-                    else if(k.startsWith(`${y}-`)) parseInt(k.split('-')[1])<3 ? cq++ : cr++;
+                const profileBtn = document.getElementById('profileBtn');
+                const profileModalOverlay = document.getElementById('profileModalOverlay');
+                const closeProfileBtn = document.getElementById('closeProfileBtn');
+
+                let perfilTurnoAsignado = null;
+                let perfilFechaIngreso = null;
+
+                const turnosMap = {};
+                function initTurnos() {
+                    let foundMatch = false;
+                    for(let start = 1; start <= 5; start++) {
+                        let currentShift = start;
+                        let testTurnos = {};
+                        let flags = {};
+                        
+                        let d = new Date(2024, 0, 1, 12, 0, 0);
+                        let endD = new Date(2035, 11, 31, 12, 0, 0);
+
+                        while (d <= endD) {
+                            let y = d.getFullYear();
+                            let m = d.getMonth();
+                            let date = d.getDate();
+
+                            let correturnosAfectado = 0;
+                            if (y === 2025) correturnosAfectado = 5;
+                            else if (y === 2026) correturnosAfectado = 1;
+                            else if (y === 2027) correturnosAfectado = 2;
+                            else if (y === 2029) correturnosAfectado = 3;
+                            else if (y === 2030) correturnosAfectado = 4;
+                            else if (y === 2031) correturnosAfectado = 5;
+                            else if (y === 2033) correturnosAfectado = 1;
+                            else if (y === 2034) correturnosAfectado = 2;
+                            else if (y === 2035) correturnosAfectado = 3;
+
+                            if (m === 2 && correturnosAfectado > 0 && currentShift === correturnosAfectado) {
+                                let keyFlag = `corr_${y}`;
+                                if (!flags[keyFlag]) {
+                                    flags[keyFlag] = true;
+                                    currentShift = (currentShift % 5) + 1; 
+                                }
+                            }
+
+                            testTurnos[`${y}-${m}-${date}`] = currentShift;
+
+                            if (y === 2026 && m === 9 && date === 14) {
+                                if (currentShift === 1) foundMatch = true;
+                            }
+
+                            currentShift = (currentShift % 5) + 1;
+                            d.setDate(d.getDate() + 1);
+                        }
+
+                        if (foundMatch) {
+                            Object.assign(turnosMap, testTurnos);
+                            break;
+                        }
+                    }
                 }
-            }
-            let lp=Math.max(0,mx-cp), cl=Math.min(lp,cq);
-            return { rL: lp-cl, rN: Math.max(0, mx-(cq-cl)-cr) };
-        }
-        function checkPerm(t,k) {
-            let m=parseInt(k.split('-')[1]), y=parseInt(k.split('-')[0]), mx=t==='vacaciones'?7:(t==='moscosos'?2:3);
-            let s=getPerm(y,t,mx); return m<3 ? (s.rL>0||s.rN>0) : s.rN>0;
-        }
+                initTurnos();
 
-        function render() {
-            let v=getPerm(cY,'vacaciones',7), m=getPerm(cY,'moscosos',2), c=getPerm(cY,'compensatorio',3);
-            document.getElementById('optVac').textContent = `● Vacaciones (${cM<3&&v.rL>0?v.rL+'+'+v.rN:v.rN})`;
-            document.getElementById('optMos').textContent = `● Moscosos (${cM<3&&m.rL>0?m.rL+'+'+m.rN:m.rN})`;
-            document.getElementById('optCon').textContent = `● Compensatorio (${cM<3&&c.rL>0?c.rL+'+'+c.rN:c.rN})`;
+                profileBtn.addEventListener('click', () => profileModalOverlay.classList.add('active'));
+                
+                closeProfileBtn.addEventListener('click', () => {
+                    const turnoVal = document.getElementById('perfilTurno').value;
+                    if (turnoVal) perfilTurnoAsignado = parseInt(turnoVal);
+                    
+                    const fechaStr = document.getElementById('perfilFechaIngreso').value;
+                    if (fechaStr) {
+                        const parts = fechaStr.split('-');
+                        perfilFechaIngreso = new Date(parts[0], parts[1] - 1, parts[2]);
+                    } else {
+                        perfilFechaIngreso = new Date(2024, 0, 1);
+                    }
 
-            els.mS.textContent = mN[cM]; els.yS.value = cY; els.dC.innerHTML = '';
-            let fD=new Date(cY,cM,1).getDay(), sD=fD===0?6:fD-1, lD=new Date(cY,cM+1,0).getDate(), plD=new Date(cY,cM,0).getDate();
-            let pM=cM-1, pY=cY; if(pM<0){pM=11;pY--;}
-            let nM=cM+1, nY=cY; if(nM>11){nM=0;nY++;}
-            
-            for(let i=sD;i>0;i--) els.dC.appendChild(cCell(pY,pM,plD-i+1,true));
-            for(let i=1;i<=lD;i++) els.dC.appendChild(cCell(cY,cM,i,false));
-            let eDays = new Date(cY,cM,lD).getDay(); eDays = eDays===0?0:7-eDays;
-            for(let i=1;i<=eDays;i++) els.dC.appendChild(cCell(nY,nM,i,true));
+                    profileModalOverlay.classList.remove('active');
+                    renderCalendar(); 
+                });
+                
+                profileModalOverlay.addEventListener('click', (e) => {
+                    if (e.target === profileModalOverlay) profileModalOverlay.classList.remove('active');
+                });
 
-            let sol=0, noc=0, fes=0;
-            for(let d=1; d<=lD; d++) {
-                let k=`${cY}-${cM}-${d}`, t=null, p=null;
-                if(pDays[k]){ p=pDays[k].split('|'); t=p[0]; }
-                else if(pTurno&&mapT[k]===pTurno&&(!pFecha||new Date(cY,cM,d)>=pFecha)) t='guardia';
-                if(!t) continue;
+                let currentDate = new Date();
+                let currentMonth = currentDate.getMonth();
+                let currentYear = currentDate.getFullYear();
+                let currentColor = null;
+                const paintedDays = {}; 
 
-                let if0=isF(cY,cM,d), if1=isF(cY,cM,d+1), dw=new Date(cY,cM,d).getDay();
-                if(['guardia','ref-ob','ref-vol','cambio-guardia'].includes(t)) {
-                    sol++; noc++; fes+=(if0?(dw===6?1.5:(if1?2:1)):(if1?0.5:0));
-                } else if(['vacaciones','moscosos','compensatorio','split'].includes(t)) {
-                    noc++; fes+=(if0?(dw===6?1.5:(if1?2:1)):(if1?0.5:0));
-                } else if(['ref-vol-horas','eventos'].includes(t)) {
-                    if(t==='ref-vol-horas') sol++;
-                    let mI=t2m(p[1],0), mF=t2m(p[2],1);
-                    if(mF>1620) noc++; else if(mF>1320) noc+=0.5;
-                    let t1=Math.max(0,Math.min(mF,1440)-Math.max(mI,540)); if(t1>0&&if0) fes+=(t1<=300?0.5:1);
-                    let t2=Math.max(0,Math.min(mF,1980)-Math.max(mI,1440)); if(t2>0&&if1) fes+=(t2<=300?0.5:1);
-                } else if(['vac-ant-horas','otros-horas'].includes(t)) {
-                    sol++; let mI=t2m(p[1],0), mF=t2m(p[2],1);
-                    let w1=900-Math.max(0,Math.min(mF,1440)-Math.max(mI,540)); if(w1>0&&if0) fes+=(w1<=300?0.5:1);
-                    let w2=540-Math.max(0,Math.min(mF,1980)-Math.max(mI,1440)); if(w2>0&&if1) fes+=(w2<=300?0.5:1);
-                    let n1=300-Math.max(0,Math.min(mF,1620)-Math.max(mI,1320));
-                    let n2=360-Math.max(0,Math.min(mF,1980)-Math.max(mI,1620));
-                    if(n2>0) noc++; else if(n1>0) noc+=0.5;
+                const festivos = [
+                    { mes: 0, dia: 1 },   { mes: 0, dia: 6 },
+                    { mes: 1, dia: 17 },
+                    { mes: 3, dia: 2 },   { mes: 3, dia: 3 },
+                    { mes: 4, dia: 1 },
+                    { mes: 5, dia: 29 },
+                    { mes: 7, dia: 15 },
+                    { mes: 8, dia: 8 },
+                    { mes: 9, dia: 12 },
+                    { mes: 10, dia: 2 },
+                    { mes: 11, dia: 7 },  { mes: 11, dia: 8 }, { mes: 11, dia: 25 }
+                ];
+
+                function isFestivo(dYear, dMonth, dDay) {
+                    const date = new Date(dYear, dMonth, dDay);
+                    const dayOfWeek = date.getDay();
+                    if (dayOfWeek === 0 || dayOfWeek === 6) return true; 
+                    return festivos.some(f => f.mes === dMonth && f.dia === dDay);
                 }
-            }
-            els.cS.textContent=sol; els.cN.textContent=noc; els.cF.textContent=fes;
-        }
 
-        function cCell(y,m,d,ina) {
-            let div=document.createElement('div'), k=`${y}-${m}-${d}`;
-            div.className='date'+(ina?' inactive':''); div.dataset.k=k;
-            let sp=document.createElement('span'); sp.className='day-number'+(isF(y,m,d)?' festivo':''); sp.textContent=d; div.appendChild(sp);
-            
-            let v=pDays[k];
-            if(v) {
-                let p=v.split('|'), t=p[0];
-                if(t==='split') {
-                    let c1=p[1]==='ref-ob'?'#ff6347':'#d2b48c', c2=p[3]==='moscosos'?'#2e8b57':'#3cb371';
-                    div.style.background=`linear-gradient(to bottom, ${c1} 50%, ${c2} 50%)`; div.classList.add('has-label');
-                    let l1=p[1]==='ref-ob'?'Obl':`Camb<br><span style="font-size:0.85em">${p[2]}</span>`,
+                function timeToShiftMinutes(timeStr, isEndTime) {
+                    if (!timeStr) return 0;
+                    const [h, m] = timeStr.split(':').map(Number);
+                    let mins = h * 60 + m;
+                    if (isEndTime && mins <= 540) mins += 1440;
+                    else if (!isEndTime && mins < 540) mins += 1440;
+                    return mins;
+                }
+
+                let remVac = 7, remMos = 2, remCon = 3;
+
+                function getPermStatus(year, typeBase, maxAllowed) {
+                    let countPrev = 0;
+                    for (const key in paintedDays) {
+                        if (key.startsWith(`${year-1}-`)) {
+                            const savedData = paintedDays[key].split('|');
+                            const tipo = savedData[0] === 'split' ? savedData[3] : savedData[0];
+                            if (tipo === typeBase) countPrev++;
+                        }
+                    }
+                    let leftoverPrev = Math.max(0, maxAllowed - countPrev);
+
+                    let countCurrentQ1 = 0;
+                    let countCurrentRest = 0;
+                    for (const key in paintedDays) {
+                        if (key.startsWith(`${year}-`)) {
+                            let m = parseInt(key.split('-')[1]);
+                            const savedData = paintedDays[key].split('|');
+                            const tipo = savedData[0] === 'split' ? savedData[3] : savedData[0];
+                            if (tipo === typeBase) {
+                                if (m < 3) countCurrentQ1++;
+                                else countCurrentRest++;
+                            }
+                        }
+                    }
+
+                    let consumedLeftover = Math.min(leftoverPrev, countCurrentQ1);
+                    let consumedNewQ1 = countCurrentQ1 - consumedLeftover;
+                    let remainingLeftover = leftoverPrev - consumedLeftover;
+                    let remainingNew = Math.max(0, maxAllowed - consumedNewQ1 - countCurrentRest);
+
+                    return { remainingLeftover, remainingNew };
+                }
+
+                function updatePermissionLimits() {
+                    let vac = getPermStatus(currentYear, 'vacaciones', 7);
+                    let mos = getPermStatus(currentYear, 'moscosos', 2);
+                    let con = getPermStatus(currentYear, 'compensatorio', 3);
+
+                    remVac = currentMonth < 3 ? (vac.remainingLeftover + vac.remainingNew) : vac.remainingNew;
+                    remMos = currentMonth < 3 ? (mos.remainingLeftover + mos.remainingNew) : mos.remainingNew;
+                    remCon = currentMonth < 3 ? (con.remainingLeftover + con.remainingNew) : con.remainingNew;
+
+                    function formatLabel(name, st) {
+                        if (currentMonth < 3) {
+                            if (st.remainingLeftover > 0) {
+                                return `● ${name} (${st.remainingLeftover} + ${st.remainingNew})`;
+                            } else {
+                                return `● ${name} (${st.remainingNew})`;
+                            }
+                        } else {
+                            return `● ${name} (${st.remainingNew})`;
+                        }
+                    }
+
+                    document.getElementById('optVac').textContent = formatLabel('Vacaciones', vac);
+                    document.getElementById('optMos').textContent = formatLabel('Moscosos', mos);
+                    document.getElementById('optCon').textContent = formatLabel('Compensatorio', con);
+                }
+
+                function checkPermissionLimit(tipo, dateKeyToPaint) {
+                    const parts = dateKeyToPaint.split('-');
+                    const y = parseInt(parts[0]);
+                    const m = parseInt(parts[1]); 
+
+                    let maxAllowed = 0;
+                    if (tipo === 'vacaciones') maxAllowed = 7;
+                    else if (tipo === 'moscosos') maxAllowed = 2;
+                    else if (tipo === 'compensatorio') maxAllowed = 3;
+                    else return true;
+
+                    let st = getPermStatus(y, tipo, maxAllowed);
+                    
+                    if (m < 3) {
+                        return (st.remainingLeftover > 0 || st.remainingNew > 0);
+                    } else {
+                        return (st.remainingNew > 0);
+                    }
+                }
+
+                function updateStats() {
+                    let solapes = 0;
+                    let nocturnos = 0;
+                    let festivosGuardia = 0; 
+                    
+                    const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+                    for (let dDay = 1; dDay <= lastDate; dDay++) {
+                        const dateKey = `${currentYear}-${currentMonth}-${dDay}`;
+                        const cellDate = new Date(currentYear, currentMonth, dDay);
+
+                        let tipoBase = null;
+                        let savedData = null;
+
+                        if (paintedDays[dateKey]) {
+                            savedData = paintedDays[dateKey].split('|');
+                            tipoBase = savedData[0];
+                        } 
+                        else if (perfilTurnoAsignado && turnosMap[dateKey] === perfilTurnoAsignado) {
+                            if (perfilFechaIngreso && cellDate >= perfilFechaIngreso) {
+                                tipoBase = 'guardia';
+                                savedData = ['guardia'];
+                            }
+                        }
+
+                        if (tipoBase) {
+                            const todayIsFestivo = isFestivo(currentYear, currentMonth, dDay);
+                            const tomorrow = new Date(currentYear, currentMonth, dDay + 1);
+                            const tomorrowIsFestivo = isFestivo(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate());
+                            const dayOfWeek = cellDate.getDay();
+
+                            if (tipoBase === 'guardia' || tipoBase === 'ref-ob' || tipoBase === 'ref-vol' || tipoBase === 'cambio-guardia') {
+                                solapes++;
+                                nocturnos++;
+                                if (todayIsFestivo) {
+                                    if (dayOfWeek === 6) festivosGuardia += 1.5;
+                                    else if (tomorrowIsFestivo) festivosGuardia += 2;
+                                    else festivosGuardia += 1;
+                                } else {
+                                    if (tomorrowIsFestivo) festivosGuardia += 0.5;
+                                }
+                            } 
+                            else if (tipoBase === 'vacaciones' || tipoBase === 'moscosos' || tipoBase === 'compensatorio' || tipoBase === 'split') {
+                                nocturnos++;
+                                if (todayIsFestivo) {
+                                    if (dayOfWeek === 6) festivosGuardia += 1.5;
+                                    else if (tomorrowIsFestivo) festivosGuardia += 2;
+                                    else festivosGuardia += 1;
+                                } else {
+                                    if (tomorrowIsFestivo) festivosGuardia += 0.5;
+                                }
+                            }
+                            else if (tipoBase === 'devolucion-guardia') {
+                                // 0 puntos
+                            }
+                            else if (tipoBase === 'ref-vol-horas' || tipoBase === 'eventos') {
+                                if (tipoBase === 'ref-vol-horas') solapes++;
+                                
+                                const hInicio = savedData[1] || "00:00";
+                                const hFin = savedData[2] || "00:00";
+                                
+                                const minI = timeToShiftMinutes(hInicio, false);
+                                let minF = timeToShiftMinutes(hFin, true);
+                                if (minF <= minI) minF += 1440;
+
+                                if (minF > 1620) nocturnos += 1;
+                                else if (minF > 1320) nocturnos += 0.5;
+
+                                const startTramo1 = Math.max(minI, 540);
+                                const endTramo1 = Math.min(minF, 1440);
+                                const duracionTramo1 = Math.max(0, endTramo1 - startTramo1);
+                                if (duracionTramo1 > 0 && todayIsFestivo) {
+                                    if (duracionTramo1 <= 300) festivosGuardia += 0.5;
+                                    else festivosGuardia += 1;
+                                }
+
+                                const startTramo2 = Math.max(minI, 1440);
+                                const endTramo2 = Math.min(minF, 1980);
+                                const duracionTramo2 = Math.max(0, endTramo2 - startTramo2);
+                                if (duracionTramo2 > 0 && tomorrowIsFestivo) {
+                                    if (duracionTramo2 <= 300) festivosGuardia += 0.5;
+                                    else festivosGuardia += 1;
+                                }
+                            }
+                            else if (tipoBase === 'vac-ant-horas' || tipoBase === 'otros-horas') {
+                                solapes++;
+                                
+                                const hInicio = savedData[1] || "00:00";
+                                const hFin = savedData[2] || "00:00";
+                                
+                                const absI = timeToShiftMinutes(hInicio, false);
+                                let absF = timeToShiftMinutes(hFin, true);
+                                if (absF <= absI) absF += 1440;
+
+                                const absTramo1 = Math.max(0, Math.min(absF, 1440) - Math.max(absI, 540));
+                                const duracionTramo1 = 900 - absTramo1; 
+                                if (duracionTramo1 > 0 && todayIsFestivo) {
+                                    if (duracionTramo1 <= 300) festivosGuardia += 0.5;
+                                    else festivosGuardia += 1;
+                                }
+
+                                const absTramo2 = Math.max(0, Math.min(absF, 1980) - Math.max(absI, 1440));
+                                const duracionTramo2 = 540 - absTramo2; 
+                                if (duracionTramo2 > 0 && tomorrowIsFestivo) {
+                                    if (duracionTramo2 <= 300) festivosGuardia += 0.5;
+                                    else festivosGuardia += 1;
+                                }
+
+                                const absTramoNoct1 = Math.max(0, Math.min(absF, 1620) - Math.max(absI, 1320));
+                                const workedNoct1 = 300 - absTramoNoct1; 
+
+                                const absTramoNoct2 = Math.max(0, Math.min(absF, 1980) - Math.max(absI, 1620));
+                                const workedNoct2 = 360 - absTramoNoct2; 
+
+                                if (workedNoct2 > 0) nocturnos += 1;
+                                else if (workedNoct1 > 0) nocturnos += 0.5;
+                            }
+                        }
+                    }
+
+                    valSolapes.textContent = solapes;
+                    valNocturnos.textContent = nocturnos;
+                    valFestivos.textContent = festivosGuardia;
+                }
+
+                function checkInputsLogic(val) {
+                    timeInputs.style.display = 'none';
+                    nameInputGroup.style.display = 'none';
+                    if (val && val.includes('horas')) {
+                        timeInputs.style.display = 'flex';
+                    } else if (val === 'cambio-guardia') {
+                        labelGuardiaNombre.textContent = "Le haces la guardia a:";
+                        nameInputGroup.style.display = 'flex';
+                    } else if (val === 'devolucion-guardia') {
+                        labelGuardiaNombre.textContent = "Te hace la guardia:";
+                        nameInputGroup.style.display = 'flex';
+                    }
+                }
+
+                tipoGuardiaSelect.addEventListener('change', (e) => {
+                    permisosSelect.value = ""; 
+                    currentColor = e.target.value;
+                    checkInputsLogic(currentColor);
+                });
+
+                permisosSelect.addEventListener('change', (e) => {
+                    tipoGuardiaSelect.value = ""; 
+                    currentColor = e.target.value;
+                    checkInputsLogic(currentColor);
+                });
+
+                datesContainer.addEventListener('click', (e) => {
+                    const targetDate = e.target.closest('.date'); 
+                    
+                    if (targetDate && !targetDate.classList.contains('inactive')) {
+                        if (!currentColor) return; 
+                        
+                        const dateKey = targetDate.dataset.date;
+                        if (!dateKey) return;
+
+                        const parts = dateKey.split('-');
+                        const cellDate = new Date(parseInt(parts[0]), parseInt(parts[1]), parseInt(parts[2]));
+                        const hasBaseGuardia = (perfilTurnoAsignado && turnosMap[dateKey] === perfilTurnoAsignado && (!perfilFechaIngreso || cellDate >= perfilFechaIngreso));
+                        const isPermiso = ['vacaciones', 'moscosos', 'compensatorio', 'devolucion-guardia', 'vac-ant-horas', 'otros-horas'].includes(currentColor);
+                        
+                        if (currentColor === 'borrar') {
+                            delete paintedDays[dateKey];
+                        } else {
+                            if (isPermiso) {
+                                let currentPaintData = paintedDays[dateKey] ? paintedDays[dateKey].split('|') : null;
+                                let currentPaint = currentPaintData ? currentPaintData[0] : null;
+
+                                if (currentColor === 'vacaciones') {
+                                    if (!hasBaseGuardia) {
+                                        alert("No puedes seleccionar este permiso para este día.");
+                                        return;
+                                    }
+                                } 
+                                else if (currentColor === 'moscosos' || currentColor === 'compensatorio') {
+                                    if (currentPaint === 'ref-ob' || currentPaint === 'cambio-guardia') {
+                                        if (!checkPermissionLimit(currentColor, dateKey)) {
+                                            alert("Ya no te quedan más de esos permisos.");
+                                            return;
+                                        }
+                                        const paramExtra = currentPaintData[1] || '';
+                                        paintedDays[dateKey] = `split|${currentPaint}|${paramExtra}|${currentColor}`;
+                                        
+                                        tipoGuardiaSelect.value = '';
+                                        permisosSelect.value = '';
+                                        checkInputsLogic(null);
+                                        currentColor = null;
+                                        renderCalendar();
+                                        return;
+                                    } else if (!hasBaseGuardia) {
+                                        alert("No puedes seleccionar este permiso para este día.");
+                                        return;
+                                    }
+                                } 
+                                else {
+                                    if (!hasBaseGuardia) {
+                                        alert("No puedes seleccionar este permiso para este día.");
+                                        return;
+                                    }
+                                }
+                                
+                                if (!checkPermissionLimit(currentColor, dateKey)) {
+                                    alert("Ya no te quedan más de esos permisos.");
+                                    return;
+                                }
+                            }
+
+                            if (currentColor.includes('horas')) {
+                                if (!horaInicio.value || !horaFin.value) {
+                                    alert("Por favor, introduce la hora de inicio y de fin en las casillas.");
+                                    return;
+                                }
+                                paintedDays[dateKey] = `${currentColor}|${horaInicio.value}|${horaFin.value}`;
+                                
+                                horaInicio.value = '';
+                                horaFin.value = '';
+                                tipoGuardiaSelect.value = '';
+                                permisosSelect.value = '';
+                                checkInputsLogic(null);
+                                currentColor = null;
+                            } else if (currentColor === 'cambio-guardia' || currentColor === 'devolucion-guardia') {
+                                const nom = guardiaNombre.value.trim();
+                                if (!nom) {
+                                    alert("Por favor, escribe el nombre en la casilla.");
+                                    return;
+                                }
+                                paintedDays[dateKey] = `${currentColor}|${nom}`;
+                                
+                                guardiaNombre.value = '';
+                                tipoGuardiaSelect.value = '';
+                                permisosSelect.value = '';
+                                checkInputsLogic(null);
+                                currentColor = null;
+                            } else {
+                                paintedDays[dateKey] = currentColor;
+                            }
+                        }
+                        
+                        renderCalendar();
+                    }
+                });
+
+                function initYearSelect() {
+                    yearSelect.innerHTML = '';
+                    for (let y = 2024; y <= 2035; y++) {
+                        let option = document.createElement('option');
+                        option.value = y;
+                        option.text = y;
+                        yearSelect.appendChild(option);
+                    }
+                    yearSelect.value = currentYear;
+                    
+                    yearSelect.addEventListener('change', () => {
+                        currentYear = parseInt(yearSelect.value);
+                        renderCalendar();
+                    });
+                }
+
+                function getCustomLabel(tipoBase) {
+                    switch(tipoBase) {
+                        case 'ref-ob': return 'Obl';
+                        case 'ref-vol': return 'Vol';
+                        case 'ref-vol-horas': return 'Vol';
+                        case 'eventos': return 'Evet';
+                        case 'cambio-guardia': return 'Camb';
+                        case 'vacaciones': return 'Vac';
+                        case 'moscosos': return 'Mos';
+                        case 'compensatorio': return 'Con';
+                        case 'devolucion-guardia': return 'Devl';
+                        case 'vac-ant-horas': return 'Vac Ant';
+                        case 'otros-horas': return 'Otr';
+                        default: return '';
+                    }
+                }
+
+                function createDayCell(y, m, d, isInactive) {
+                    const dateDiv = document.createElement('div');
+                    dateDiv.classList.add('date');
+                    if (isInactive) dateDiv.classList.add('inactive');
+                    
+                    const dateKey = `${y}-${m}-${d}`;
+                    dateDiv.dataset.date = dateKey;
+                    
+                    const spanNum = document.createElement('span');
+                    spanNum.classList.add('day-number');
+                    spanNum.textContent = d;
+
+                    const cellDate = new Date(y, m, d);
+                    const currentDayOfWeek = cellDate.getDay();
+                    const esFestivo = festivos.some(festivo => festivo.mes === m && festivo.dia === d) 
+                                      || currentDayOfWeek === 0 
+                                      || currentDayOfWeek === 6;
+
+                    if (esFestivo) {
+                        spanNum.classList.add('festivo');
+                    }
+
+                    dateDiv.appendChild(spanNum);
+                    
+                    if (paintedDays[dateKey]) {
+                        const savedData = paintedDays[dateKey].split('|');
+                        const tipoBase = savedData[0];
+                        
+                        if (tipoBase === 'split') {
+                            const topType = savedData[1];
+                            const topParam = savedData[2];
+                            const botType = savedData[3];
+
+                            const colorTop = (topType === 'ref-ob') ? '#ff6347' : '#d2b48c';
+                            const colorBot = (botType === 'moscosos') ? '#2e8b57' : '#3cb371';
+                            
+                            dateDiv.style.background = `linear-gradient(to bottom, ${colorTop} 50%, ${colorBot} 50%)`;
+                            dateDiv.classList.add('has-label');
+                            
+                            const labelDiv = document.createElement('div');
+                            labelDiv.style.position = 'absolute';
+                            labelDiv.style.top = '0';
+                            labelDiv.style.left = '0';
+                            labelDiv.style.width = '100%';
+                            labelDiv.style.height = '100%';
+                            labelDiv.style.display = 'flex';
+                            labelDiv.style.flexDirection = 'column';
+                            labelDiv.style.zIndex = '1';
+
+                            let topText = topType === 'ref-ob' ? 'Obl' : `Camb<br><span style="font-size:0.85em;">${topParam}</span>`;
+                            let topColor = topType === 'ref-ob' ? 'white' : 'black';
+                            
+                            let botText = botType === 'moscosos' ? 'Mos' : 'Con';
+                            let botColor = botType === 'moscosos' ? 'white' : 'black';
+
+                            labelDiv.innerHTML = `
+                                <div style="height:50%; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; padding-bottom:1px; color:${topColor}; font-size:0.75em; font-weight:bold; line-height:1.1;">${topText}</div>
+                                <div style="height:50%; display:flex; flex-direction:column; justify-content:flex-start; align-items:center; padding-top:1px; color:${botColor}; font-size:0.75em; font-weight:bold; line-height:1.1;">${botText}</div>
+                            `;
+                            dateDiv.appendChild(labelDiv);
+                        } 
+                        else {
+                            if (['vacaciones', 'moscosos', 'compensatorio', 'devolucion-guardia', 'vac-ant-horas', 'otros-horas'].includes(tipoBase)) {
+                                if (tipoBase === 'devolucion-guardia') {
+                                    dateDiv.classList.add('devolucion-guardia'); 
+                                } else {
+                                    dateDiv.classList.add('permiso');
+                                    dateDiv.classList.add(tipoBase); 
+                                }
+                            } else {
+                                dateDiv.classList.add(tipoBase);
+                            }
+
+                            const labelText = getCustomLabel(tipoBase);
+                            if (labelText) {
+                                dateDiv.classList.add('has-label'); 
+                                const labelDiv = document.createElement('div');
+                                labelDiv.classList.add('custom-label');
+
+                                if (tipoBase.includes('horas')) {
+                                    if (savedData.length === 3) {
+                                        labelDiv.innerHTML = `${labelText}<br><span style="font-size:0.85em;">${savedData[1]}<br>${savedData[2]}</span>`;
+                                        dateDiv.title = `De ${savedData[1]} a ${savedData[2]}`;
+                                    }
+                                } else if (tipoBase === 'cambio-guardia') {
+                                    const nombreGuardia = savedData[1] || "";
+                                    labelDiv.innerHTML = `${labelText}<br><span style="font-size:0.85em;">${nombreGuardia}</span>`;
+                                    dateDiv.title = `Cambio por: ${nombreGuardia}`;
+                                } else if (tipoBase === 'devolucion-guardia') {
+                                    const nombreGuardia = savedData[1] || "";
+                                    labelDiv.innerHTML = `${labelText}<br><span style="font-size:0.85em;">${nombreGuardia}</span>`;
+                                    dateDiv.title = `Te hace la guardia: ${nombreGuardia}`;
+                                } else {
+                                    labelDiv.textContent = labelText;
+                                }
+                                dateDiv.appendChild(labelDiv);
+                            }
+                        }
+                    } 
+                    else if (perfilTurnoAsignado && turnosMap[dateKey] === perfilTurnoAsignado) {
+                        if (perfilFechaIngreso && cellDate >= perfilFechaIngreso) {
+                            dateDiv.classList.add('guardia');
+                        }
+                    }
+                    
+                    return dateDiv;
+                }
+
+                function renderCalendar() {
+                    updatePermissionLimits(); 
+
+                    monthSpan.textContent = monthNames[currentMonth];
+                    yearSelect.value = currentYear; 
+                    datesContainer.innerHTML = ''; 
+
+                    const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+                    let startDay = firstDayIndex === 0 ? 6 : firstDayIndex - 1; 
+
+                    const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
+                    const prevLastDate = new Date(currentYear, currentMonth, 0).getDate();
+                    const lastDayIndex = new Date(currentYear, currentMonth, lastDate).getDay();
+                    let endDays = lastDayIndex === 0 ? 0 : 7 - lastDayIndex;
+
+                    let pMonth = currentMonth - 1;
+                    let pYear = currentYear;
+                    if (pMonth < 0) {
+                        pMonth = 11;
+                        pYear--;
+                    }
+                    for (let i = startDay; i > 0; i--) {
+                        const d = prevLastDate - i + 1;
+                        datesContainer.appendChild(createDayCell(pYear, pMonth, d, true));
+                    }
+
+                    for (let i = 1; i <= lastDate; i++) {
+                        datesContainer.appendChild(createDayCell(currentYear, currentMonth, i, false));
+                    }
+
+                    let nMonth = currentMonth + 1;
+                    let nYear = currentYear;
+                    if (nMonth > 11) {
+                        nMonth = 0;
+                        nYear++;
+                    }
+                    for (let i = 1; i <= endDays; i++) {
+                        datesContainer.appendChild(createDayCell(nYear, nMonth, i, true));
+                    }
+
+                    updateStats();
+                }
+
+                prevBtn.addEventListener('click', () => {
+                    currentMonth--;
+                    if (currentMonth < 0) {
+                        currentMonth = 11;
+                        currentYear--;
+                        if(currentYear < 2024) currentYear = 2024;
+                    }
+                    renderCalendar();
+                });
+
+                nextBtn.addEventListener('click', () => {
+                    currentMonth++;
+                    if (currentMonth > 11) {
+                        currentMonth = 0;
+                        currentYear++;
+                        if(currentYear > 2035) currentYear = 2035;
+                    }
+                    renderCalendar();
+                });
+
+                initYearSelect();
+                renderCalendar();
+
+            } catch (error) {
+                // ESCUDO ANTI-ERRORES INTERNO
+                document.body.innerHTML = '<div style="padding: 20px; font-family: sans-serif;"><div style="background-color:#ffe6e6; color:#cc0000; padding: 20px; border: 2px solid #cc0000; border-radius: 8px;"><h1>🚨 ERROR TÉCNICO INTERNO</h1><p><b>Mensaje:</b> ' + error.message + '</p></div></div>';
+            }
+        });
+    </script>
+</body>
+</html>
