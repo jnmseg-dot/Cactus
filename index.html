@@ -543,6 +543,31 @@
 
     <div class="version-text">Versión 4.0 - Cactus Definitiva</div>
 
+    <!-- MODAL DE AUTENTICACIÓN (NUBE) -->
+    <div id="authModalOverlay" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="authTitle" style="margin-top: 0; text-align: center;">☁️ Nube Cactus</h3>
+            
+            <div class="input-group-container">
+                <div class="input-group">
+                    <label for="authEmail">Correo electrónico:</label>
+                    <input type="email" id="authEmail" placeholder="tu@correo.com" style="width: 100%; padding: 8px; box-sizing: border-box; border-radius: 4px; border: 1px solid #ccc;">
+                </div>
+                <div class="input-group" style="margin-top: 10px;">
+                    <label for="authPassword">Contraseña:</label>
+                    <input type="password" id="authPassword" placeholder="Mínimo 6 caracteres" style="width: 100%; padding: 8px; box-sizing: border-box; border-radius: 4px; border: 1px solid #ccc;">
+                </div>
+            </div>
+
+            <div class="modal-buttons" style="margin-top: 20px;">
+                <button id="authActionBtn" class="action-btn" style="background-color: #add8e6;">Registrarse</button>
+                <button id="closeAuthBtn" class="action-btn">Cancelar</button>
+            </div>
+            
+            <p id="authToggleText" style="font-size: 0.85em; margin-top: 15px; text-align: center; cursor: pointer; text-decoration: underline; color: #555;">¿Ya tienes cuenta? Inicia sesión aquí</p>
+        </div>
+    </div>
+    
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             try {
