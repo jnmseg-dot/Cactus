@@ -577,28 +577,27 @@
 
     <div class="version-text">Versión 4.0 - Cactus Definitiva</div>
 
-    <!-- MODAL DE AUTENTICACIÓN (NUBE) -->
+  <!-- MODAL DE AUTENTICACIÓN (NUBE) -->
     <div id="authModalOverlay" class="modal-overlay">
-        <div class="modal-content">
-            <h3 id="authTitle" style="margin-top: 0; text-align: center;">☁️ Nube Cactus</h3>
+        <div style="background-color: white; padding: 30px; border-radius: 12px; border: 3px solid black; width: 85%; max-width: 320px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); margin: auto; font-family: 'Segoe UI', sans-serif;">
+            <h2 id="authTitle" style="margin-top: 0; text-align: center; color: black; font-weight: 900; font-size: 1.6em; text-transform: uppercase;">Nube Cactus</h2>
             
-            <div class="input-group-container">
-                <div class="input-group">
-                    <label for="authEmail">Correo electrónico:</label>
-                    <input type="email" id="authEmail" placeholder="tu@correo.com" style="width: 100%; padding: 8px; box-sizing: border-box; border-radius: 4px; border: 1px solid #ccc;">
-                </div>
-                <div class="input-group" style="margin-top: 10px;">
-                    <label for="authPassword">Contraseña:</label>
-                    <input type="password" id="authPassword" placeholder="Mínimo 6 caracteres" style="width: 100%; padding: 8px; box-sizing: border-box; border-radius: 4px; border: 1px solid #ccc;">
-                </div>
+            <div style="margin-top: 20px;">
+                <label for="authEmail" style="font-weight: bold; font-size: 0.95em; color: black; display: block; margin-bottom: 5px;">Correo electrónico:</label>
+                <input type="email" id="authEmail" placeholder="tu@correo.com" style="width: 100%; padding: 12px; box-sizing: border-box; border-radius: 6px; border: 2px solid #ccc; font-size: 1em; outline: none;">
+            </div>
+            
+            <div style="margin-top: 15px;">
+                <label for="authPassword" style="font-weight: bold; font-size: 0.95em; color: black; display: block; margin-bottom: 5px;">Contraseña:</label>
+                <input type="password" id="authPassword" placeholder="Mínimo 6 caracteres" style="width: 100%; padding: 12px; box-sizing: border-box; border-radius: 6px; border: 2px solid #ccc; font-size: 1em; outline: none;">
             </div>
 
-            <div class="modal-buttons" style="margin-top: 20px;">
-                <button id="authActionBtn" class="action-btn" style="background-color: #add8e6;">Registrarse</button>
-                <button id="closeAuthBtn" class="action-btn">Cancelar</button>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 25px;">
+                <button id="authActionBtn" style="background-color: black; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 1.1em; cursor: pointer;">Registrarse</button>
+                <button id="closeAuthBtn" style="background-color: transparent; color: black; border: 2px solid black; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 1em; cursor: pointer;">Cancelar</button>
             </div>
             
-            <p id="authToggleText" style="font-size: 0.85em; margin-top: 15px; text-align: center; cursor: pointer; text-decoration: underline; color: #555;">¿Ya tienes cuenta? Inicia sesión aquí</p>
+            <p id="authToggleText" style="font-size: 0.9em; margin-top: 20px; text-align: center; cursor: pointer; text-decoration: underline; color: #555; font-weight: bold;">¿Ya tienes cuenta? Inicia sesión aquí</p>
         </div>
     </div>
     
