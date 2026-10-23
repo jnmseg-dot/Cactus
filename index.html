@@ -767,7 +767,9 @@ authActionBtn.addEventListener('click', async () => {
         else if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') errorMsg = "❌ Contraseña incorrecta o usuario no encontrado.";
         else if (error.code === 'auth/weak-password') errorMsg = "❌ La contraseña debe tener al menos 6 caracteres.";
         
-        alert(errorMsg);
+        alert(errorMsg + "
+
+Detalle técnico: " + error.message);
     }
 });
 
