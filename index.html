@@ -421,6 +421,40 @@
         .date.vac-ant-horas { background-color: #90ee90 !important; color: black; } 
         .date.otros-horas { background-color: #c1ffc1 !important; color: black; } 
     </style>
+<!-- Cargar los SDK de Firebase -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+  // Estas son las coordenadas exactas de tu servidor Cactus en Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyCH7O4fbsro4_0MUSKila9ovMuHZSAv6e4",
+    authDomain: "cactus-b504d.firebaseapp.com",
+    projectId: "cactus-b504d",
+    storageBucket: "cactus-b504d.firebasestorage.app",
+    messagingSenderId: "39689160358",
+    appId: "1:39689160358:web:f4092095467775c267d667"
+  };
+
+  // Inicializar Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Hacer que las herramientas de Firebase estén disponibles para todo el programa
+  window.firebaseAuth = auth;
+  window.firebaseDb = db;
+  window.firebaseCreateUser = createUserWithEmailAndPassword;
+  window.firebaseSignIn = signInWithEmailAndPassword;
+  window.firebaseOnAuthChange = onAuthStateChanged;
+  window.firebaseSignOut = signOut;
+  window.firebaseSendVerification = sendEmailVerification;
+  window.firebaseDoc = doc;
+  window.firebaseSetDoc = setDoc;
+  window.firebaseGetDoc = getDoc;
+</script>
+    
 </head>
 <body>
 
