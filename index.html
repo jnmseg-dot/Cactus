@@ -711,6 +711,66 @@ closeAuthBtn.addEventListener('click', () => {
     authModalOverlay.classList.remove('active'); // Cierra la ventana de login
 });
 
+                // --- MOTOR DE FIREBASE: REGISTRO Y LOGIN ---
+const authEmailInput = document.getElementById('authEmail');
+const authPasswordInput = document.getElementById('authPassword');
+const authActionBtn = document.getElementById('authActionBtn');
+const authToggleText = document.getElementById('authToggleText');
+const authTitle = document.getElementById('authTitle');
+
+let isLoginMode = false; // Empezamos en modo "Registrarse"
+
+// Cambiar entre Registrarse e Iniciar Sesión al pulsar el texto inferior
+authToggleText.addEventListener('click', () => {
+    isLoginMode = !isLoginMode;
+    if (isLoginMode) {
+        authTitle.textContent = "INICIAR SESIÓN";
+        authActionBtn.textContent = "Entrar";
+        authToggleText.textContent = "¿No tienes cuenta? Regístrate aquí";
+    } else {
+        authTitle.textContent = "NUBE CACTUS";
+        authActionBtn.textContent = "Registrarse";
+        authToggleText.textContent = "¿Ya tienes cuenta? Inicia sesión aquí";
+    }
+});
+
+// Acción al pulsar el botón principal (Registrarse o Entrar)
+authActionBtn.addEventListener('click', async () => {
+    const email = authEmailInput.value.trim();
+    const password = authPasswordInput.value.trim();
+
+    if (!email || !password) {
+        alert("⚠️ Por favor, rellena el correo y la contraseña.");
+        return;
+    }
+
+    try {
+        if (isLoginMode) {
+            // Iniciar sesión
+            const userCredential = await window.firebaseSignIn(window.firebaseAuth, email, password);
+            alert("✅ ¡Sesión iniciada con éxito!");
+            authModalOverlay.classList.remove('active');
+        } else {
+            // Crear cuenta nueva
+            const userCredential = await window.firebaseCreateUser(window.firebaseAuth, email, password);
+            
+            // Enviar email de confirmación automático
+            await window.firebaseSendVerification(userCredential.user);
+            
+            alert("📧 ¡Cuenta creada! Te hemos enviado un correo de confirmación. Por favor, revisa tu bandeja de entrada para verificar tu cuenta.");
+            authModalOverlay.classList.remove('active');
+        }
+    } catch (error) {
+        // Traducir los errores de Firebase al español
+        let errorMsg = "❌ Error en la conexión.";
+        if (error.code === 'auth/email-already-in-use') errorMsg = "❌ Este correo ya está registrado. Inicia sesión.";
+        else if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') errorMsg = "❌ Contraseña incorrecta o usuario no encontrado.";
+        else if (error.code === 'auth/weak-password') errorMsg = "❌ La contraseña debe tener al menos 6 caracteres.";
+        
+        alert(errorMsg);
+    }
+});
+
 closeProfileBtn.addEventListener('click', () => {
                     const turnoVal = document.getElementById('perfilTurno').value;
                     if (turnoVal) perfilTurnoAsignado = parseInt(turnoVal);
