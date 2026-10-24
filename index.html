@@ -468,47 +468,53 @@
         </div>
     </div>
 
+    <!-- VENTANA PRINCIPAL DE PERFIL -->
     <div id="profileModalOverlay" class="modal-overlay">
-        <div class="profile-modal">
-            <h3>Perfil</h3>
+        <div style="background-color: white; position: relative; padding: 25px; border-radius: 12px; border: 3px solid black; width: 85%; max-width: 320px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); margin: auto; font-family: 'Segoe UI', sans-serif;">
             
-            <div class="profile-group">
-                <label for="perfilTurno">Turno:</label>
-                <select id="perfilTurno">
-                    <option value="" disabled selected hidden>Selecciona tu turno</option>
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                </select>
-            </div>
+            <!-- Botón X para cerrar en modo invitado -->
+            <button onclick="document.getElementById('profileModalOverlay').classList.remove('active')" style="position: absolute; top: 10px; right: 15px; background: none; border: none; font-size: 1.8em; font-weight: bold; cursor: pointer; color: #555; padding: 0;">&times;</button>
 
-            <div class="profile-group">
-                <label for="perfilCategoria">Categoría:</label>
-                <select id="perfilCategoria">
-                    <option value="bombero">Bombero</option>
-                    <option value="jefe-dotacion">Jefe de dotación ▲▲</option>
-                    <option value="jefe-turno">Jefe de Turno ▲▲▲</option>
-                </select>
-            </div>
-
-            <div class="profile-group">
-                <label for="perfilFechaIngreso">Fecha de ingreso:</label>
-                <input type="date" id="perfilFechaIngreso">
-            </div>
-
-            <button id="closeProfileBtn" class="close-modal-btn">Guardar y cerrar</button>
-<!-- Botones de Nube -->
-            <div id="authButtonsContainer" style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
-                <button id="btnAbrirLogin" class="action-btn" style="background-color: transparent; color: black; border: 2px solid black; font-weight: bold; width: 100%; padding: 10px; border-radius: 6px;">Iniciar Sesión</button>
-                <button id="btnAbrirRegistro" class="action-btn" style="background-color: black; color: white; border: none; font-weight: bold; width: 100%; padding: 12px; border-radius: 6px; font-size: 1.1em;">Crear Cuenta</button>
-            </div>
+            <h2 style="margin-top: 0; text-align: center; color: black; font-weight: 900; font-size: 1.5em; margin-bottom: 20px;">PERFIL</h2>
             
-            <!-- Panel de Usuario Logueado (Oculto por defecto) -->
-            <div id="userInfoContainer" style="display: none; margin-top: 15px; text-align: center; border-top: 2px dashed #ccc; padding-top: 15px;">
-                <p style="font-weight: bold; margin-bottom: 15px; color: black; font-size: 1.1em;">👋 Hola, <span id="userNameDisplay"></span></p>
-                <button id="btnCerrarSesion" class="action-btn" style="background-color: #ff4d4d; color: white; border: none; font-weight: bold; width: 100%; padding: 10px; border-radius: 6px;">Cerrar Sesión</button>
+            <!-- ESTADO 1: INVITADO (NO LOGUEADO) -->
+            <div id="authButtonsContainer" style="display: flex; flex-direction: column; gap: 10px; text-align: center;">
+                <p style="font-size: 0.95em; color: black; font-weight: bold; margin-bottom: 10px;">Inicia sesión para configurar tu calendario y tus turnos.</p>
+                <button id="btnAbrirLogin" style="background-color: transparent; color: black; border: 2px solid black; font-weight: bold; width: 100%; padding: 10px; border-radius: 6px; cursor: pointer; font-size: 1.05em;">Iniciar Sesión</button>
+                <button id="btnAbrirRegistro" style="background-color: black; color: white; border: none; font-weight: bold; width: 100%; padding: 12px; border-radius: 6px; font-size: 1.1em; cursor: pointer;">Crear Cuenta</button>
+            </div>
+
+            <!-- ESTADO 2: USUARIO LOGUEADO -->
+            <div id="userInfoContainer" style="display: none;">
+                <p style="font-weight: bold; margin-bottom: 15px; color: black; font-size: 1.1em; text-align: center;">👋 Hola, <span id="userNameDisplay"></span></p>
+                
+                <div style="margin-bottom: 10px;">
+                    <label style="font-weight: bold; font-size: 0.85em; display: block; margin-bottom: 3px; color: black;">Turno:</label>
+                    <select id="perfilTurno" style="width: 100%; padding: 6px 8px; box-sizing: border-box; border-radius: 4px; border: 1px solid #ccc; font-size: 0.95em; outline: none;">
+                        <option value="">Selecciona tu turno</option>
+                        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                        <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 10px;">
+                    <label style="font-weight: bold; font-size: 0.85em; display: block; margin-bottom: 3px; color: black;">Categoría:</label>
+                    <select id="perfilCategoria" style="width: 100%; padding: 6px 8px; box-sizing: border-box; border-radius: 4px; border: 1px solid #ccc; font-size: 0.95em; outline: none;">
+                        <option value="bombero">Bombero</option>
+                        <option value="jefe-dotacion">Jefe de dotación ▲▲</option>
+                        <option value="jefe-turno">Jefe de turno ▲▲▲</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 20px;">
+                    <label style="font-weight: bold; font-size: 0.85em; display: block; margin-bottom: 3px; color: black;">Fecha de ingreso:</label>
+                    <input type="date" id="perfilFechaIngreso" style="width: 100%; padding: 6px 8px; box-sizing: border-box; border-radius: 4px; border: 1px solid #ccc; font-size: 0.95em; outline: none;">
+                </div>
+                
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <button id="closeProfileBtn" style="background-color: black; color: white; border: none; font-weight: bold; width: 100%; padding: 12px; border-radius: 6px; font-size: 1.05em; cursor: pointer;">Guardar y cerrar</button>
+                    <button id="btnCerrarSesion" style="background-color: transparent; color: #ff4d4d; border: 2px solid #ff4d4d; font-weight: bold; width: 100%; padding: 10px; border-radius: 6px; cursor: pointer;">Cerrar Sesión</button>
+                </div>
             </div>
         </div>
     </div>
