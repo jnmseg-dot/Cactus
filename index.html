@@ -587,27 +587,69 @@
 
     <div class="version-text">Versión 4.0 - Cactus Definitiva</div>
 
-  <!-- MODAL DE AUTENTICACIÓN (NUBE) -->
-    <div id="authModalOverlay" class="modal-overlay">
+  <!-- MODAL DE INICIO DE SESIÓN -->
+    <div id="loginModalOverlay" class="modal-overlay">
         <div style="background-color: white; padding: 30px; border-radius: 12px; border: 3px solid black; width: 85%; max-width: 320px; box-shadow: 0 8px 20px rgba(0,0,0,0.4); margin: auto; font-family: 'Segoe UI', sans-serif;">
-            <h2 id="authTitle" style="margin-top: 0; text-align: center; color: black; font-weight: 900; font-size: 1.6em; text-transform: uppercase;">Nube Cactus</h2>
-            
+            <h2 style="margin-top: 0; text-align: center; color: black; font-weight: 900; font-size: 1.6em;">INICIAR SESIÓN</h2>
             <div style="margin-top: 20px;">
-                <label for="authEmail" style="font-weight: bold; font-size: 0.95em; color: black; display: block; margin-bottom: 5px;">Correo electrónico:</label>
-                <input type="email" id="authEmail" placeholder="tu@correo.com" style="width: 100%; padding: 12px; box-sizing: border-box; border-radius: 6px; border: 2px solid #ccc; font-size: 1em; outline: none;">
+                <label style="font-weight: bold; font-size: 0.95em; color: black; display: block; margin-bottom: 5px;">Correo:</label>
+                <input type="email" id="loginEmail" style="width: 100%; padding: 12px; box-sizing: border-box; border-radius: 6px; border: 2px solid #ccc; outline: none;">
             </div>
+            <div style="margin-top: 15px;">
+                <label style="font-weight: bold; font-size: 0.95em; color: black; display: block; margin-bottom: 5px;">Contraseña:</label>
+                <input type="password" id="loginPassword" style="width: 100%; padding: 12px; box-sizing: border-box; border-radius: 6px; border: 2px solid #ccc; outline: none;">
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 25px;">
+                <button id="btnLoginAction" style="background-color: black; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 1.1em; cursor: pointer;">Entrar</button>
+                <button id="btnCloseLogin" style="background-color: transparent; color: black; border: 2px solid black; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer;">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE REGISTRO COMPLETO -->
+    <div id="registroModalOverlay" class="modal-overlay">
+        <div style="background-color: white; padding: 25px; border-radius: 12px; border: 3px solid black; width: 90%; max-width: 350px; max-height: 85vh; overflow-y: auto; box-shadow: 0 8px 20px rgba(0,0,0,0.4); margin: auto; font-family: 'Segoe UI', sans-serif;">
+            <h2 style="margin-top: 0; text-align: center; color: black; font-weight: 900; font-size: 1.5em;">CREAR CUENTA</h2>
             
             <div style="margin-top: 15px;">
-                <label for="authPassword" style="font-weight: bold; font-size: 0.95em; color: black; display: block; margin-bottom: 5px;">Contraseña:</label>
-                <input type="password" id="authPassword" placeholder="Mínimo 6 caracteres" style="width: 100%; padding: 12px; box-sizing: border-box; border-radius: 6px; border: 2px solid #ccc; font-size: 1em; outline: none;">
+                <label style="font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px; color: black;">Nombre / Apodo:</label>
+                <input type="text" id="regNombre" style="width: 100%; padding: 10px; box-sizing: border-box; border-radius: 6px; border: 2px solid #ccc; outline: none;">
             </div>
-
-            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 25px;">
-                <button id="authActionBtn" style="background-color: black; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 1.1em; cursor: pointer;">Registrarse</button>
-                <button id="closeAuthBtn" style="background-color: transparent; color: black; border: 2px solid black; padding: 10px; border-radius: 6px; font-weight: bold; font-size: 1em; cursor: pointer;">Cancelar</button>
+            <div style="margin-top: 10px;">
+                <label style="font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px; color: black;">Turno:</label>
+                <select id="regTurno" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #ccc; outline: none;">
+                    <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                    <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                </select>
+            </div>
+            <div style="margin-top: 10px;">
+                <label style="font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px; color: black;">Categoría:</label>
+                <select id="regCategoria" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #ccc; outline: none;">
+                    <option value="bombero">Bombero</option>
+                    <option value="jefe-dotacion">Jefe de dotación ▲▲</option>
+                    <option value="jefe-turno">Jefe de turno ▲▲▲</option>
+                </select>
+            </div>
+            <div style="margin-top: 10px;">
+                <label style="font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px; color: black;">Fecha de ingreso:</label>
+                <input type="date" id="regFecha" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #ccc; outline: none;">
             </div>
             
-            <p id="authToggleText" style="font-size: 0.9em; margin-top: 20px; text-align: center; cursor: pointer; text-decoration: underline; color: #555; font-weight: bold;">¿Ya tienes cuenta? Inicia sesión aquí</p>
+            <hr style="margin: 20px 0; border: 1px solid #eee;">
+            
+            <div>
+                <label style="font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px; color: black;">Correo electrónico:</label>
+                <input type="email" id="regEmail" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #ccc; outline: none;">
+            </div>
+            <div style="margin-top: 10px;">
+                <label style="font-weight: bold; font-size: 0.9em; display: block; margin-bottom: 5px; color: black;">Contraseña:</label>
+                <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres" style="width: 100%; padding: 10px; border-radius: 6px; border: 2px solid #ccc; outline: none;">
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+                <button id="btnRegistroAction" style="background-color: black; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 1.1em; cursor: pointer;">Registrar Perfil</button>
+                <button id="btnCloseRegistro" style="background-color: transparent; color: black; border: 2px solid black; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer;">Cancelar</button>
+            </div>
         </div>
     </div>
     
