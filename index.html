@@ -760,16 +760,14 @@ authActionBtn.addEventListener('click', async () => {
             alert("📧 ¡Cuenta creada! Te hemos enviado un correo de confirmación. Por favor, revisa tu bandeja de entrada para verificar tu cuenta.");
             authModalOverlay.classList.remove('active');
         }
-    } catch (error) {
+   } catch (error) {
         // Traducir los errores de Firebase al español
         let errorMsg = "❌ Error en la conexión.";
         if (error.code === 'auth/email-already-in-use') errorMsg = "❌ Este correo ya está registrado. Inicia sesión.";
         else if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') errorMsg = "❌ Contraseña incorrecta o usuario no encontrado.";
         else if (error.code === 'auth/weak-password') errorMsg = "❌ La contraseña debe tener al menos 6 caracteres.";
         
-    alert(errorMsg + "\n\nDetalle técnico: " + error.message);
-
-Detalle técnico: " + error.message);
+        alert(errorMsg + "\n\nDetalle técnico: " + error.message);
     }
 });
 
