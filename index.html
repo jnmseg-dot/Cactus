@@ -872,6 +872,23 @@
         }
     });               
 
+// --- MOTOR DE GUARDADO AUTOMÁTICO DEL CALENDARIO ---
+    window.guardarCalendarioEnNube = async function() {
+        const user = window.firebaseAuth.currentUser;
+        if (user) { 
+            try {
+                // Guarda el mapa de días sin borrar tu Nombre o Categoría (merge: true)
+                await window.firebaseSetDoc(
+                    window.firebaseDoc(window.firebaseDb, "usuarios", user.uid), 
+                    { calendario: turnosMap }, 
+                    { merge: true } 
+                );
+            } catch (error) {
+                console.error("Error guardando el calendario en la nube:", error);
+            }
+        }
+    };
+                
 closeProfileBtn.addEventListener('click', () => {
                     const turnoVal = document.getElementById('perfilTurno').value;
                     if (turnoVal) perfilTurnoAsignado = parseInt(turnoVal);
