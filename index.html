@@ -828,7 +828,7 @@
         alert("👋 Sesión cerrada correctamente.");
     });
 
- // VIGILANTE AUTOMÁTICO DE LA SESIÓN
+// VIGILANTE AUTOMÁTICO DE LA SESIÓN (Hace la magia al detectar si estás dentro)
     window.firebaseOnAuthChange(window.firebaseAuth, async (user) => {
         if (user) {
             authButtonsContainer.style.display = 'none';
@@ -848,11 +848,8 @@
                 const parts = data.fechaIngreso.split('-');
                 if(parts.length === 3) perfilFechaIngreso = new Date(parts[0], parts[1] - 1, parts[2]);
                 
-                // --- MAGIA: CARGAR TUS DÍAS Y COLORES PINTADOS ---
-                if (data.calendario) {
-                    for (let key in turnosMap) delete turnosMap[key];
-                    Object.assign(turnosMap, data.calendario);
-                }
+                // --- MAGIA: CARGAR TUS COLORES Y TRIÁNGULOS ---
+                // (Dejamos turnosMap tranquilo para no borrar la matriz base del calendario)
                 if (data.coloresPintados) {
                     for (let key in paintedDays) delete paintedDays[key];
                     Object.assign(paintedDays, data.coloresPintados);
@@ -868,13 +865,13 @@
             authButtonsContainer.style.display = 'flex';
             userInfoContainer.style.display = 'none';
             
-            for (let key in turnosMap) delete turnosMap[key];
+            // Limpiamos los colores del usuario al salir, dejando intacto el calendario base
             for (let key in paintedDays) delete paintedDays[key];
             for (let key in superiorDays) delete superiorDays[key];
             perfilTurnoAsignado = null;
             renderCalendar();
         }
-    });   
+    });
 
 // --- MOTOR DE GUARDADO AUTOMÁTICO DEL CALENDARIO ---
     window.guardarCalendarioEnNube = async function() {
@@ -884,7 +881,7 @@
                 await window.firebaseSetDoc(
                     window.firebaseDoc(window.firebaseDb, "usuarios", user.uid), 
                     { 
-                        calendario: turnosMap,
+                        // Enviamos solo los datos personales pintados por el usuario
                         coloresPintados: paintedDays,
                         triangulosSuperiores: superiorDays
                     }, 
