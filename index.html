@@ -1205,6 +1205,7 @@ closeProfileBtn.addEventListener('click', () => {
                             checkInputsLogic(null);
                             currentColor = null;
                             renderCalendar();
+                            if (typeof window.guardarCalendarioEnNube === 'function') window.guardarCalendarioEnNube();
                             return; // Terminamos aquí para no sobreescribir el color base
                         } else {
                             if (isPermiso) {
@@ -1231,6 +1232,7 @@ closeProfileBtn.addEventListener('click', () => {
                                         checkInputsLogic(null);
                                         currentColor = null;
                                         renderCalendar();
+                                        if (typeof window.guardarCalendarioEnNube === 'function') window.guardarCalendarioEnNube();
                                         return;
                                     } else if (!hasBaseGuardia) {
                                         alert("No puedes seleccionar este permiso para este día.");
@@ -1282,6 +1284,7 @@ closeProfileBtn.addEventListener('click', () => {
                         }
                         
                         renderCalendar();
+                        if (typeof window.guardarCalendarioEnNube === 'function') window.guardarCalendarioEnNube();
                     }
                 });
 
