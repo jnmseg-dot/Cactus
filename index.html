@@ -1559,6 +1559,16 @@ closeProfileBtn.addEventListener('click', () => {
             panelErroresNomina.style.display = panelErroresNomina.style.display === 'none' ? 'block' : 'none';
         });
     }
+
+            // --- ABRIR / CERRAR PANEL DE ERRORES DE NÓMINA ---
+    const btnAbrirErrores = document.getElementById('btnAbrirErrores');
+    const panelErroresNomina = document.getElementById('panelErroresNomina');
+    
+    if (btnAbrirErrores && panelErroresNomina) {
+        btnAbrirErrores.addEventListener('click', () => {
+            panelErroresNomina.style.display = panelErroresNomina.style.display === 'none' ? 'block' : 'none';
+        });
+    }
         });
     </script>
 </body>
