@@ -583,7 +583,7 @@
         </div>
 
         <div class="stats-panel">
-            <h3>Cómputo Mensual</h3>
+            <span id="tituloNomina">NÓMINA</span>
             <p>Solapes: <span id="countSolapes">0</span></p>
             <p>Nocturnos: <span id="countNocturnos">0</span></p>
             <p>Festivos: <span id="countFestivos">0</span></p>
@@ -1486,6 +1486,13 @@ closeProfileBtn.addEventListener('click', () => {
                     }
 
                     updateStats();
+                    // --- ACTUALIZAR TÍTULO DE NÓMINA AL MES SIGUIENTE ---
+    const tituloNomina = document.getElementById('tituloNomina');
+    if (tituloNomina && typeof currentMonth !== 'undefined' && typeof monthNames !== 'undefined') {
+        // Calculamos el mes siguiente (si es Diciembre (11), pasará a Enero (0))
+        const indexMesSiguiente = (currentMonth + 1) % 12;
+        tituloNomina.textContent = "NÓMINA DE " + monthNames[indexMesSiguiente].toUpperCase();
+    }
                 }
 
                 prevBtn.addEventListener('click', () => {
