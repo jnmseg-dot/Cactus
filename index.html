@@ -1560,6 +1560,34 @@ closeProfileBtn.addEventListener('click', () => {
             panelErroresNomina.style.display = panelErroresNomina.style.display === 'none' ? 'block' : 'none';
         });
     }
+            // --- GUARDAR LOS ATRASOS DEL MES ACTUAL ---
+    const btnGuardarErrores = document.getElementById('btnGuardarErrores');
+    if (btnGuardarErrores) {
+        btnGuardarErrores.addEventListener('click', () => {
+            if (typeof window.erroresNomina === 'undefined') window.erroresNomina = {};
+            
+            // Creamos una "matrícula" para saber en qué mes apuntaste el error
+            const key = currentYear + "-" + currentMonth; 
+            
+            // Guardamos los números de las casillas (si están vacías, guardamos un 0)
+            window.erroresNomina[key] = {
+                solapes: parseFloat(document.getElementById('inputErrorSolapes').value) || 0,
+                nocturnos: parseFloat(document.getElementById('inputErrorNocturnos').value) || 0,
+                festivos: parseFloat(document.getElementById('inputErrorFestivos').value) || 0
+            };
+            
+            // Vaciamos las casillas para que quede limpio
+            document.getElementById('inputErrorSolapes').value = '';
+            document.getElementById('inputErrorNocturnos').value = '';
+            document.getElementById('inputErrorFestivos').value = '';
+            
+            alert("✅ Atrasos guardados. Se sumarán automáticamente en la nómina del mes siguiente.");
+            document.getElementById('panelErroresNomina').style.display = 'none'; // Cerramos panel
+            
+            // Disparamos el motor para que se guarde en Firebase al instante
+            if (typeof window.guardarCalendarioEnNube === 'function') window.guardarCalendarioEnNube();
+        });
+    }
         });
     </script>
 </body>
