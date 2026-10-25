@@ -1521,6 +1521,41 @@ closeProfileBtn.addEventListener('click', () => {
         const indexMesSiguiente = (currentMonth + 1) % 12;
         tituloNomina.textContent = "NÓMINA DE " + monthNames[indexMesSiguiente].toUpperCase();
     }
+                    // --- MAGIA: SUMAR LOS ATRASOS DEL MES ANTERIOR ---
+    if (typeof window.erroresNomina === 'undefined') window.erroresNomina = {};
+    
+    // 1. Calculamos cuál fue el mes anterior matemáticamente
+    let prevM = currentMonth - 1;
+    let prevY = currentYear;
+    if (prevM < 0) { prevM = 11; prevY--; }
+    const prevKey = prevY + "-" + prevM;
+    
+    // 2. Buscamos si en ese mes anterior guardamos algún atraso
+    const errores = window.erroresNomina[prevKey];
+    
+    const leyendaAtrasos = document.getElementById('leyendaAtrasos');
+    if (leyendaAtrasos) leyendaAtrasos.style.display = 'none'; // La frase roja se oculta por defecto
+    
+    // 3. Si hay errores que superan el 0, hacemos la suma visual
+    if (errores && (errores.solapes > 0 || errores.nocturnos > 0 || errores.festivos > 0)) {
+        if (leyendaAtrasos) leyendaAtrasos.style.display = 'block'; // Mostramos la frase
+        
+        // Función para cambiar el texto del número normal a la fórmula roja
+        const aplicarSuma = (id, extra) => {
+            if (extra > 0) {
+                const span = document.getElementById(id);
+                if (span) {
+                    const base = parseFloat(span.innerText) || 0;
+                    const total = base + extra;
+                    span.innerHTML = `${base} + <span style="color:#ff2a2a; font-weight:900;">${extra}</span> = ${total}`;
+                }
+            }
+        };
+        
+        aplicarSuma('countSolapes', errores.solapes);
+        aplicarSuma('countNocturnos', errores.nocturnos);
+        aplicarSuma('countFestivos', errores.festivos);
+    }
                 }
 
                 prevBtn.addEventListener('click', () => {
