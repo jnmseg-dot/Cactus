@@ -1550,16 +1550,7 @@ closeProfileBtn.addEventListener('click', () => {
                 // ESCUDO ANTI-ERRORES INTERNO
                 document.body.innerHTML = '<div style="padding: 20px; font-family: sans-serif;"><div style="background-color:#ffe6e6; color:#cc0000; padding: 20px; border: 2px solid #cc0000; border-radius: 8px;"><h1>🚨 ERROR TÉCNICO INTERNO</h1><p><b>Mensaje:</b> ' + error.message + '</p></div></div>';
             }
-            // --- ABRIR / CERRAR PANEL DE ERRORES DE NÓMINA ---
-    const btnAbrirErrores = document.getElementById('btnAbrirErrores');
-    const panelErroresNomina = document.getElementById('panelErroresNomina');
-    
-    if (btnAbrirErrores && panelErroresNomina) {
-        btnAbrirErrores.addEventListener('click', () => {
-            panelErroresNomina.style.display = panelErroresNomina.style.display === 'none' ? 'block' : 'none';
-        });
-    }
-
+          
             // --- ABRIR / CERRAR PANEL DE ERRORES DE NÓMINA ---
     const btnAbrirErrores = document.getElementById('btnAbrirErrores');
     const panelErroresNomina = document.getElementById('panelErroresNomina');
