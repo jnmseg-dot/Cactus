@@ -828,59 +828,66 @@
         alert("👋 Sesión cerrada correctamente.");
     });
 
-  // VIGILANTE AUTOMÁTICO DE LA SESIÓN (Hace la magia al detectar si estás dentro)
+ // VIGILANTE AUTOMÁTICO DE LA SESIÓN
     window.firebaseOnAuthChange(window.firebaseAuth, async (user) => {
         if (user) {
-            // Estás logueado: Oculta botones y muestra saludo
             authButtonsContainer.style.display = 'none';
             userInfoContainer.style.display = 'block';
             
-            // Descarga tu perfil guardado en la nube
             const docSnap = await window.firebaseGetDoc(window.firebaseDoc(window.firebaseDb, "usuarios", user.uid));
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 userNameDisplay.textContent = data.nombre;
                 
-                // Sobrescribe los menús
                 document.getElementById('perfilTurno').value = data.turno;
                 document.getElementById('perfilCategoria').value = data.categoria;
                 document.getElementById('perfilFechaIngreso').value = data.fechaIngreso;
                 
-                // Aplica configuración
                 perfilTurnoAsignado = parseInt(data.turno);
                 perfilCategoriaAsignada = data.categoria;
                 const parts = data.fechaIngreso.split('-');
                 if(parts.length === 3) perfilFechaIngreso = new Date(parts[0], parts[1] - 1, parts[2]);
                 
-                // --- MAGIA: CARGAR TUS DÍAS PINTADOS ---
+                // --- MAGIA: CARGAR TUS DÍAS Y COLORES PINTADOS ---
                 if (data.calendario) {
-                    for (let key in turnosMap) delete turnosMap[key]; // Vaciamos el local
-                    Object.assign(turnosMap, data.calendario); // Metemos el de la nube
+                    for (let key in turnosMap) delete turnosMap[key];
+                    Object.assign(turnosMap, data.calendario);
+                }
+                if (data.coloresPintados) {
+                    for (let key in paintedDays) delete paintedDays[key];
+                    Object.assign(paintedDays, data.coloresPintados);
+                }
+                if (data.triangulosSuperiores) {
+                    for (let key in superiorDays) delete superiorDays[key];
+                    Object.assign(superiorDays, data.triangulosSuperiores);
                 }
                 
                 renderCalendar(); 
             }
         } else {
-            // Sesión cerrada
             authButtonsContainer.style.display = 'flex';
             userInfoContainer.style.display = 'none';
             
-            // Limpiar calendario al salir para proteger privacidad
             for (let key in turnosMap) delete turnosMap[key];
+            for (let key in paintedDays) delete paintedDays[key];
+            for (let key in superiorDays) delete superiorDays[key];
             perfilTurnoAsignado = null;
             renderCalendar();
         }
-    });               
+    });   
 
 // --- MOTOR DE GUARDADO AUTOMÁTICO DEL CALENDARIO ---
     window.guardarCalendarioEnNube = async function() {
         const user = window.firebaseAuth.currentUser;
         if (user) { 
             try {
-                // Guarda el mapa de días sin borrar tu Nombre o Categoría (merge: true)
                 await window.firebaseSetDoc(
                     window.firebaseDoc(window.firebaseDb, "usuarios", user.uid), 
-                    { calendario: turnosMap }, 
+                    { 
+                        calendario: turnosMap,
+                        coloresPintados: paintedDays,
+                        triangulosSuperiores: superiorDays
+                    }, 
                     { merge: true } 
                 );
             } catch (error) {
