@@ -1649,6 +1649,38 @@ closeProfileBtn.addEventListener('click', () => {
             if (typeof window.guardarCalendarioEnNube === 'function') window.guardarCalendarioEnNube();
         });
     }
+
+                // --- LÓGICA DEL AVISO BETA ---
+    const betaModal = document.getElementById('betaWarningModal');
+    const chkLeidoBeta = document.getElementById('chkLeidoBeta');
+    const chkNoMostrarBeta = document.getElementById('chkNoMostrarBeta');
+    const btnAceptarBeta = document.getElementById('btnAceptarBeta');
+
+    if (betaModal && chkLeidoBeta && chkNoMostrarBeta && btnAceptarBeta) {
+        chkLeidoBeta.addEventListener('change', () => {
+            if (chkLeidoBeta.checked) {
+                // Si marca que lo ha leído, encendemos el botón
+                btnAceptarBeta.style.backgroundColor = 'black';
+                btnAceptarBeta.style.color = 'white';
+                btnAceptarBeta.style.cursor = 'pointer';
+                btnAceptarBeta.disabled = false;
+            } else {
+                // Si lo desmarca, lo volvemos a apagar
+                btnAceptarBeta.style.backgroundColor = '#ccc';
+                btnAceptarBeta.style.color = '#666';
+                btnAceptarBeta.style.cursor = 'not-allowed';
+                btnAceptarBeta.disabled = true;
+            }
+        });
+
+        btnAceptarBeta.addEventListener('click', () => {
+            if (chkNoMostrarBeta.checked) {
+                // Guardamos en la memoria del móvil que no quiere volver a verlo
+                localStorage.setItem('cactusAvisoOculto', 'true');
+            }
+            betaModal.style.display = 'none'; // Cerramos el cartel
+        });
+    }
                 
             } catch (error) {
                 // ESCUDO ANTI-ERRORES INTERNO
