@@ -906,7 +906,6 @@
                 const parts = data.fechaIngreso.split('-');
                 if(parts.length === 3) perfilFechaIngreso = new Date(parts[0], parts[1] - 1, parts[2]);
                 
-                // --- MAGIA: CARGAR TUS COLORES, TRIÁNGULOS Y ATRASOS ---
                 if (data.coloresPintados) {
                     for (let key in paintedDays) delete paintedDays[key];
                     Object.assign(paintedDays, data.coloresPintados);
@@ -916,10 +915,15 @@
                     Object.assign(superiorDays, data.triangulosSuperiores);
                 }
                 
-                // Extraemos tus atrasos de la nube al entrar
                 window.erroresNomina = data.erroresGuardados || {};
                 
                 renderCalendar(); 
+                
+                // --- MAGIA NUEVA: LANZAR EL AVISO BETA AL ENTRAR ---
+                // Comprueba la memoria del móvil, si no está oculto, lo muestra
+                if (localStorage.getItem('cactusAvisoOculto') !== 'true') {
+                    document.getElementById('betaWarningModal').style.display = 'flex';
+                }
             }
         } else {
             authButtonsContainer.style.display = 'flex';
@@ -927,7 +931,7 @@
             
             for (let key in paintedDays) delete paintedDays[key];
             for (let key in superiorDays) delete superiorDays[key];
-            window.erroresNomina = {}; // Limpiamos tu privacidad al salir
+            window.erroresNomina = {};
             perfilTurnoAsignado = null;
             renderCalendar();
         }
